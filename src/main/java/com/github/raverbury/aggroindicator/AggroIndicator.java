@@ -1,7 +1,12 @@
 package com.github.raverbury.aggroindicator;
 
+import com.github.raverbury.aggroindicator.events.ClientEventHandler;
+import com.github.raverbury.aggroindicator.events.ServerEventHandler;
+import com.github.raverbury.aggroindicator.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
+import io.netty.channel.Channel;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -18,6 +23,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -28,20 +34,12 @@ import org.slf4j.Logger;
 public class AggroIndicator {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "aggroindicator";
-    // Creates a new Block with the id "examplemod:example_block", combining the namespace and path
-    // public static final RegistryObject<Block> EXAMPLE_BLOCK = BLOCKS.register("example_block", () -> new Block(BlockBehaviour.Properties.of(Material.STONE)));
-
-    // Create a Deferred Register to hold Blocks which will all be registered under the "examplemod" namespace
-    // public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
-
-    // Create a Deferred Register to hold Items which will all be registered under the "examplemod" namespace
-    // public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-
-    // Creates a new BlockItem with the id "examplemod:example_block", combining the namespace and path
-    // public static final RegistryObject<Item> EXAMPLE_BLOCK_ITEM = ITEMS.register("example_block", () -> new BlockItem(EXAMPLE_BLOCK.get(), new Item.Properties().tab(CreativeModeTab.TAB_BUILDING_BLOCKS)));
 
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    public static final String NETWORK_CHANNEL_ID = "Aggro_Indicator";
+    public static Channel channel;
 
     public AggroIndicator() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -56,6 +54,10 @@ public class AggroIndicator {
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
+
+        ServerEventHandler.register();
+        ClientEventHandler.register();
+        NetworkHandler.register();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {

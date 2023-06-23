@@ -1,74 +1,83 @@
 package com.github.raverbury.aggroindicator.events;
 
 import com.github.raverbury.aggroindicator.AggroIndicator;
-import com.github.raverbury.aggroindicator.AlertRenderer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
+import com.github.raverbury.aggroindicator.network.NetworkHandler;
+import com.github.raverbury.aggroindicator.network.packet.MobDeAggroPacket;
+import com.github.raverbury.aggroindicator.network.packet.MobTargetPlayerPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
-// @Mod.EventBusSubscriber(modid = AggroIndicator.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.DEDICATED_SERVER)
 public class ServerEventHandler {
 
-    private static final float DISTANCE = 32f;
-
-    // @SubscribeEvent
-    public static void handleRenderLivingEvent(LivingEvent.LivingTickEvent event) {
-        AggroIndicator.LOGGER.debug("RLE register?");
-        if (event.isCanceled()) {
-            return;
-        }
-        if (!shouldDrawAlert(event.getEntity())) {
-            return;
-        }
-        AlertRenderer.addEntity(event.getEntity());
+    public static void register() {
+        MinecraftForge.EVENT_BUS.addListener(ServerEventHandler::handleLivingChangeTargetEvent);
+        MinecraftForge.EVENT_BUS.addListener(ServerEventHandler::handleLivingDeathEvent);
     }
 
-    public static boolean shouldDrawAlert(LivingEntity tickedEntity) {
-        Minecraft minecraftClient = Minecraft.getInstance();
-        Entity cameraEntity = minecraftClient.getCameraEntity();
-        final boolean TOO_FAR_AWAY = cameraEntity == null || tickedEntity.distanceTo(cameraEntity) > DISTANCE;
-        if (TOO_FAR_AWAY) {
-            AggroIndicator.LOGGER.debug("too far");
-            return false;
+    public static void handleLivingChangeTargetEvent(LivingChangeTargetEvent event) {
+        // AggroIndicator.LOGGER.debug("LCTE fired" + ((getCurrentTarget(event.getEntity()) != null)? getCurrentTarget(event.getEntity()).toString() : "no og target") + ((event.getNewTarget() != null)? event.getNewTarget().toString() : "no new target"));
+        if (event.isCanceled() || event.getEntity() == null || event.getEntity().level.isClientSide()) {
+            return;
         }
-
-        final boolean NOT_A_MOB = !(tickedEntity instanceof Mob);
-        if (NOT_A_MOB) {
-            AggroIndicator.LOGGER.debug("not a mob");
-            return false;
+        if (shouldSendDeAggroPacket(event)) {
+            NetworkHandler.sendToPlayer(new MobDeAggroPacket(event.getEntity().getUUID()), (ServerPlayer) getCurrentTarget(event.getEntity()));
+            AggroIndicator.LOGGER.debug("Should send deaggro packet");
         }
-
-        Mob mob = (Mob) tickedEntity;
-        LivingEntity target = mob.getTarget();
-        final boolean NO_ATTACK_TARGET = target == null;
-        if (NO_ATTACK_TARGET) {
-            AggroIndicator.LOGGER.debug("no target");
-            AggroIndicator.LOGGER.debug(mob.toString());
-            AggroIndicator.LOGGER.debug(mob.getMobType().toString());
-            AggroIndicator.LOGGER.debug(mob.getTarget() != null? mob.getTarget().getName().getString() : "No target");
-            return false;
+        if (shouldSendAggroPacket(event)) {
+            NetworkHandler.sendToPlayer(new MobTargetPlayerPacket(event.getEntity().getUUID(), event.getNewTarget().getUUID()), (ServerPlayer) event.getNewTarget());
+            AggroIndicator.LOGGER.debug("Should send aggro packet");
         }
+    }
 
-        Player player = Minecraft.getInstance().player;
-        final boolean TARGET_IS_NOT_PLAYER = (LivingEntity) player == null || !(target.is((LivingEntity) player));
-        if (TARGET_IS_NOT_PLAYER) {
-            AggroIndicator.LOGGER.debug("not player");
-            return false;
+    public static void handleLivingDeathEvent(LivingDeathEvent event) {
+        if (event.isCanceled() || event.getEntity() == null || event.getEntity().level.isClientSide()) {
+            return;
         }
-
-        final boolean ENTITY_IS_INVISIBLE = tickedEntity.isInvisibleTo(player);
-        if (ENTITY_IS_INVISIBLE) {
-            AggroIndicator.LOGGER.debug("invisible");
-            return false;
+        if (shouldSendDeAggroPacket(event)) {
+            AggroIndicator.LOGGER.debug("Should send death deaggro packet");
+            ServerPlayer serverPlayer = (ServerPlayer) ((Mob) event.getEntity()).getTarget();
+            NetworkHandler.sendToPlayer(new MobDeAggroPacket(event.getEntity().getUUID()), serverPlayer);
         }
+    }
 
-        AggroIndicator.LOGGER.debug("Got a valid entity here");
-        return true;
+    private static boolean shouldSendDeAggroPacket(LivingDeathEvent event) {
+        LivingEntity target = getCurrentTarget(event.getEntity());
+        final boolean WAS_TARGETING_PLAYER = target instanceof ServerPlayer;
+
+        return WAS_TARGETING_PLAYER;
+    }
+
+    private static boolean shouldSendDeAggroPacket(LivingChangeTargetEvent event) {
+        LivingEntity oldTarget = getCurrentTarget(event.getEntity());
+        LivingEntity newTarget = event.getNewTarget();
+
+        final boolean WAS_TARGETING_PLAYER = oldTarget instanceof ServerPlayer;
+
+        final boolean NEW_TARGET_IS_DIFFERENT = newTarget == null || !newTarget.is(oldTarget);
+
+        return WAS_TARGETING_PLAYER && NEW_TARGET_IS_DIFFERENT;
+    }
+
+    private static boolean shouldSendAggroPacket(LivingChangeTargetEvent event) {
+        LivingEntity oldTarget = getCurrentTarget(event.getEntity());
+        LivingEntity newTarget = event.getNewTarget();
+
+        final boolean IS_TARGETING_PLAYER = newTarget instanceof ServerPlayer;
+
+        final boolean NEW_TARGET_IS_DIFFERENT = oldTarget == null || !oldTarget.is(newTarget);
+
+        return IS_TARGETING_PLAYER && NEW_TARGET_IS_DIFFERENT;
+    }
+
+    private static LivingEntity getCurrentTarget(LivingEntity entity) {
+        if (!(entity instanceof Mob)) {
+            return null;
+        }
+        Mob mob = (Mob) entity;
+        return mob.getTarget();
     }
 }

@@ -8,22 +8,21 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.common.MinecraftForge;
 
-@Mod.EventBusSubscriber(modid = AggroIndicator.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientEventHandler {
 
     private static final float DISTANCE = 32f;
 
-    @SubscribeEvent
+    public static void register() {
+        MinecraftForge.EVENT_BUS.addListener(ClientEventHandler::handleRenderLivingEvent);
+        MinecraftForge.EVENT_BUS.addListener(ClientEventHandler::handleRenderLevelStageEvent);
+    }
+
     public static void handleRenderLivingEvent(RenderLivingEvent.Post<? extends LivingEntity, ? extends EntityModel<?>> event) {
-        AggroIndicator.LOGGER.debug("RLE register?");
-        if (event.isCanceled()) {
+        if (event.isCanceled() || !event.getEntity().level.isClientSide()) {
             return;
         }
         if (!shouldDrawAlert(event.getEntity())) {
@@ -32,7 +31,6 @@ public class ClientEventHandler {
         AlertRenderer.addEntity(event.getEntity());
     }
 
-    @SubscribeEvent
     public static void handleRenderLevelStageEvent(RenderLevelStageEvent event) {
         if (event.isCanceled()) {
             return;
@@ -48,42 +46,27 @@ public class ClientEventHandler {
         Entity cameraEntity = minecraftClient.getCameraEntity();
         final boolean TOO_FAR_AWAY = cameraEntity == null || renderedEntity.distanceTo(cameraEntity) > DISTANCE;
         if (TOO_FAR_AWAY) {
-            AggroIndicator.LOGGER.debug("too far");
             return false;
         }
 
         final boolean NOT_A_MOB = !(renderedEntity instanceof Mob);
         if (NOT_A_MOB) {
-            AggroIndicator.LOGGER.debug("not a mob");
             return false;
         }
-        return true;
 
-        // Mob mob = (Mob) renderedEntity;
-        // LivingEntity target = mob.getTarget();
-        // final boolean NO_ATTACK_TARGET = target == null;
-        // if (NO_ATTACK_TARGET) {
-        //     AggroIndicator.LOGGER.debug("no target");
-        //     AggroIndicator.LOGGER.debug(mob.toString());
-        //     AggroIndicator.LOGGER.debug(mob.getMobType().toString());
-        //     AggroIndicator.LOGGER.debug(mob.getTarget() != null? mob.getTarget().getName().getString() : "No target");
-        //     return false;
-        // }
-        //
-        // Player player = Minecraft.getInstance().player;
-        // final boolean TARGET_IS_NOT_PLAYER = (LivingEntity) player == null || !(target.is((LivingEntity) player));
-        // if (TARGET_IS_NOT_PLAYER) {
-        //     AggroIndicator.LOGGER.debug("not player");
-        //     return false;
-        // }
-        //
-        // final boolean ENTITY_IS_INVISIBLE = renderedEntity.isInvisibleTo(player);
-        // if (ENTITY_IS_INVISIBLE) {
-        //     AggroIndicator.LOGGER.debug("invisible");
-        //     return false;
-        // }
-        //
-        // AggroIndicator.LOGGER.debug("Got a valid entity here");
-        // return true;
+        Player player = Minecraft.getInstance().player;
+        final boolean ENTITY_IS_INVISIBLE = player == null || renderedEntity.isInvisibleTo(player);
+        if (ENTITY_IS_INVISIBLE) {
+            return false;
+        }
+
+        final boolean IS_TARGETING_CLIENT_PLAYER = AlertRenderer.shouldDrawThisUuid(renderedEntity.getUUID());
+        if (!IS_TARGETING_CLIENT_PLAYER) {
+            // AggroIndicator.LOGGER.debug("Final check failed");
+            return false;
+        }
+        // AggroIndicator.LOGGER.debug("Valid render target found");
+
+        return true;
     }
 }
