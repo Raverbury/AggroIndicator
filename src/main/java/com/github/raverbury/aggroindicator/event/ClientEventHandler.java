@@ -1,4 +1,4 @@
-package com.github.raverbury.aggroindicator.events;
+package com.github.raverbury.aggroindicator.event;
 
 import com.github.raverbury.aggroindicator.AlertRenderer;
 import com.github.raverbury.aggroindicator.config.ClientConfig;

@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.19.2-0.0.0.3-beta1]
+
+### Changed
+
+- Package name
+
+### Fixed
+
+- Config en/us translation
+
 ## [1.19.2-0.0.0.2-beta1]
 
 ### Added

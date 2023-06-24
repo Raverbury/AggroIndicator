@@ -1,4 +1,4 @@
 {
-  "config.renderAlertIcon": "Alert icons will not be displayed if set to false",
-  "config.renderRange": "Only mobs within range will display alert icons"
+  "config.renderAlertIcon": "Render alert icons",
+  "config.renderRange": "Range"
 }
