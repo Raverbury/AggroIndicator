@@ -1,9 +1,10 @@
-package com.github.raverbury.aggroindicator.events;
+package com.github.raverbury.aggroindicator.event;
 
-import com.github.raverbury.aggroindicator.AggroIndicator;
 import com.github.raverbury.aggroindicator.AlertRenderer;
+import com.github.raverbury.aggroindicator.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -13,8 +14,6 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
 
 public class ClientEventHandler {
-
-    private static final float DISTANCE = 32f;
 
     public static void register() {
         MinecraftForge.EVENT_BUS.addListener(ClientEventHandler::handleRenderLivingEvent);
@@ -42,9 +41,12 @@ public class ClientEventHandler {
     }
 
     public static boolean shouldDrawAlert(LivingEntity renderedEntity) {
+        if (!ClientConfig.RENDER_ALERT_ICON.get()) {
+            return false;
+        }
         Minecraft minecraftClient = Minecraft.getInstance();
         Entity cameraEntity = minecraftClient.getCameraEntity();
-        final boolean TOO_FAR_AWAY = cameraEntity == null || renderedEntity.distanceTo(cameraEntity) > DISTANCE;
+        final boolean TOO_FAR_AWAY = cameraEntity == null || renderedEntity.distanceTo(cameraEntity) > ClientConfig.RENDER_RANGE.get();
         if (TOO_FAR_AWAY) {
             return false;
         }
@@ -63,6 +65,11 @@ public class ClientEventHandler {
         final boolean IS_TARGETING_CLIENT_PLAYER = AlertRenderer.shouldDrawThisUuid(renderedEntity.getUUID());
         if (!IS_TARGETING_CLIENT_PLAYER) {
             // AggroIndicator.LOGGER.debug("Final check failed");
+            return false;
+        }
+
+        final boolean PLAYER_HAS_STATUS_BLINDNESS_OR_DARKNESS = player.hasEffect(MobEffects.BLINDNESS) || player.hasEffect(MobEffects.DARKNESS);
+        if (PLAYER_HAS_STATUS_BLINDNESS_OR_DARKNESS) {
             return false;
         }
         // AggroIndicator.LOGGER.debug("Valid render target found");

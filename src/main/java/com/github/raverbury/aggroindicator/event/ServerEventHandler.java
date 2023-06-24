@@ -1,4 +1,4 @@
-package com.github.raverbury.aggroindicator.events;
+package com.github.raverbury.aggroindicator.event;
 
 import com.github.raverbury.aggroindicator.AggroIndicator;
 import com.github.raverbury.aggroindicator.network.NetworkHandler;
