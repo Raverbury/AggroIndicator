@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.19.2-0.0.0.4-beta1]
+
+### Changed
+
+- Require both server and client to have the mod installed. Installing on just the client or server won't crash but also won't do anything
+
+### Fixed
+
+- Crash on server startup
+
 ## [1.19.2-0.0.0.3-beta1]
 
 ### Changed
