@@ -30,11 +30,11 @@ public class ServerEventHandler {
         }
         if (shouldSendDeAggroPacket(event)) {
             NetworkHandler.sendToPlayer(new MobDeAggroPacket(event.getEntity().getUUID()), (ServerPlayer) getCurrentTarget(event.getEntity()));
-            AggroIndicator.LOGGER.debug("Should send deaggro packet");
+//            AggroIndicator.LOGGER.debug("Should send deaggro packet");
         }
         if (shouldSendAggroPacket(event)) {
             NetworkHandler.sendToPlayer(new MobTargetPlayerPacket(event.getEntity().getUUID(), event.getNewTarget().getUUID()), (ServerPlayer) event.getNewTarget());
-            AggroIndicator.LOGGER.debug("Should send aggro packet");
+//            AggroIndicator.LOGGER.debug("Should send aggro packet");
         }
     }
 
@@ -43,7 +43,7 @@ public class ServerEventHandler {
             return;
         }
         if (shouldSendDeAggroPacket(event)) {
-            AggroIndicator.LOGGER.debug("Should send death deaggro packet");
+//            AggroIndicator.LOGGER.debug("Should send death deaggro packet");
             ServerPlayer serverPlayer = (ServerPlayer) ((Mob) event.getEntity()).getTarget();
             NetworkHandler.sendToPlayer(new MobDeAggroPacket(event.getEntity().getUUID()), serverPlayer);
         }
