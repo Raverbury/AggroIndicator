@@ -1,6 +1,7 @@
 package com.github.raverbury.aggroindicator;
 
 import com.github.raverbury.aggroindicator.config.ClientConfig;
+import com.github.raverbury.aggroindicator.config.ServerConfig;
 import com.github.raverbury.aggroindicator.event.ClientEventHandler;
 import com.github.raverbury.aggroindicator.event.ServerEventHandler;
 import com.github.raverbury.aggroindicator.network.NetworkHandler;
@@ -43,6 +44,7 @@ public class AggroIndicator {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.INSTANCE);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ClientConfig.INSTANCE);
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ClientEventHandler::register);
         ServerEventHandler.register();

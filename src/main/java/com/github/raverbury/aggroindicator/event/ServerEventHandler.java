@@ -1,6 +1,7 @@
 package com.github.raverbury.aggroindicator.event;
 
 import com.github.raverbury.aggroindicator.AggroIndicator;
+import com.github.raverbury.aggroindicator.config.ServerConfig;
 import com.github.raverbury.aggroindicator.network.NetworkHandler;
 import com.github.raverbury.aggroindicator.network.packet.MobDeAggroPacket;
 import com.github.raverbury.aggroindicator.network.packet.MobTargetPlayerPacket;
@@ -10,6 +11,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class ServerEventHandler {
 
@@ -65,6 +70,21 @@ public class ServerEventHandler {
     private static boolean shouldSendAggroPacket(LivingChangeTargetEvent event) {
         LivingEntity oldTarget = getCurrentTarget(event.getEntity());
         LivingEntity newTarget = event.getNewTarget();
+
+        String entityRegistryName = Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(event.getEntity().getType())).toString();
+        boolean IS_BLACKLISTED = false;
+        for (String item : ServerConfig.SERVER_MOB_BLACKLIST.get()
+        ) {
+            item = item.replace("*", ".*");
+            Pattern pattern = Pattern.compile(item, Pattern.CASE_INSENSITIVE);
+            if (pattern.matcher(entityRegistryName).matches()) {
+                IS_BLACKLISTED = true;
+                break;
+            }
+        }
+        if (IS_BLACKLISTED) {
+            return false;
+        }
 
         final boolean IS_TARGETING_PLAYER = newTarget instanceof ServerPlayer;
 
