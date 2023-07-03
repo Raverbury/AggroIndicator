@@ -12,6 +12,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class ClientEventHandler {
 
@@ -53,6 +57,21 @@ public class ClientEventHandler {
 
         final boolean NOT_A_MOB = !(renderedEntity instanceof Mob);
         if (NOT_A_MOB) {
+            return false;
+        }
+
+        String entityRegistryName = Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(renderedEntity.getType())).toString();
+        boolean IS_BLACKLISTED = false;
+        for (String item : ClientConfig.CLIENT_MOB_BLACKLIST.get()
+        ) {
+            item = item.replace("*", ".*");
+            Pattern pattern = Pattern.compile(item, Pattern.CASE_INSENSITIVE);
+            if (pattern.matcher(entityRegistryName).matches()) {
+                IS_BLACKLISTED = true;
+                break;
+            }
+        }
+        if (IS_BLACKLISTED) {
             return false;
         }
 

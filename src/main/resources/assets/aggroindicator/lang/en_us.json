@@ -1,4 +1,10 @@
 {
-  "config.renderAlertIcon": "Render alert icons",
-  "config.renderRange": "Range"
+  "config.client.renderAlertIcon": "Alert icons will not be displayed if set to false",
+  "config.client.renderRange": "Only mobs within range will display alert icons",
+  "config.client.xOffset": "Adjusts the position of alert icons horizontally",
+  "config.client.yOffset": "Adjusts the position of alert icons vertically",
+  "config.client.alertIconSize": "Adjusts the size of alert icons",
+  "config.client.scaleWithMobSize": "Scales alert icons with mob's size",
+  "config.client.clientMobBlacklist": "Client does not render alert icons above these mobs",
+  "config.server.clientMobBlacklist": "Server does not check target acquisition for these mobs"
 }

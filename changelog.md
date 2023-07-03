@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.2-0.0.0.5-beta1]
+
+### Added
+
+- More configs for scaling/positioning icons
+- Blacklist on both server and client
+
 ## [1.19.2-0.0.0.4-beta1]
 
 ### Changed
