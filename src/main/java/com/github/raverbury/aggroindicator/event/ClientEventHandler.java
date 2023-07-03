@@ -25,7 +25,7 @@ public class ClientEventHandler {
     }
 
     public static void handleRenderLivingEvent(RenderLivingEvent.Post<? extends LivingEntity, ? extends EntityModel<?>> event) {
-        if (event.isCanceled() || !event.getEntity().level.isClientSide()) {
+        if (event.isCanceled() || !event.getEntity().level().isClientSide()) {
             return;
         }
         if (!shouldDrawAlert(event.getEntity())) {

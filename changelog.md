@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.20.x-0.0.0.5-beta1]
+
+## Changed
+
+- Ported to 1.20
+
 ## [1.19.2-0.0.0.5-beta1]
 
 ### Added

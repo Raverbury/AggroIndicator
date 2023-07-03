@@ -1,10 +1,9 @@
 package com.github.raverbury.aggroindicator;
 
 import com.github.raverbury.aggroindicator.config.ClientConfig;
+import com.github.raverbury.aggroindicator.util.MathHelper;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -13,6 +12,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -89,7 +90,8 @@ public class AlertRenderer {
 
             matrix.pushPose();
             matrix.translate(x - camX, (y + height) - camY, z - camZ);
-            matrix.mulPose(Vector3f.YP.rotationDegrees(-camera.getYRot()));
+            Vector3f YP = new Vector3f(0.0f, 1.0f, 0.0f);
+            matrix.mulPose(MathHelper.rotationDegrees(YP, -camera.getYRot()));
             matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
             if (ClientConfig.SCALE_WITH_MOB_SIZE.get()) {
                 float size = (float) entity.getBoundingBox().getSize();

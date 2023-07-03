@@ -25,7 +25,7 @@ public class ServerEventHandler {
 
     public static void handleLivingChangeTargetEvent(LivingChangeTargetEvent event) {
         // AggroIndicator.LOGGER.debug("LCTE fired" + ((getCurrentTarget(event.getEntity()) != null)? getCurrentTarget(event.getEntity()).toString() : "no og target") + ((event.getNewTarget() != null)? event.getNewTarget().toString() : "no new target"));
-        if (event.isCanceled() || event.getEntity() == null || event.getEntity().level.isClientSide()) {
+        if (event.isCanceled() || event.getEntity() == null || event.getEntity().level().isClientSide()) {
             return;
         }
         if (shouldSendDeAggroPacket(event)) {
@@ -39,7 +39,7 @@ public class ServerEventHandler {
     }
 
     public static void handleLivingDeathEvent(LivingDeathEvent event) {
-        if (event.isCanceled() || event.getEntity() == null || event.getEntity().level.isClientSide()) {
+        if (event.isCanceled() || event.getEntity() == null || event.getEntity().level().isClientSide()) {
             return;
         }
         if (shouldSendDeAggroPacket(event)) {
