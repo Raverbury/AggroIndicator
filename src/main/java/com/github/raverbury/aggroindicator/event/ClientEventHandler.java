@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
@@ -20,11 +21,11 @@ import java.util.regex.Pattern;
 public class ClientEventHandler {
 
     public static void register() {
-        MinecraftForge.EVENT_BUS.addListener(ClientEventHandler::handleRenderLivingEvent);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, ClientEventHandler::handleRenderLivingEvent);
         MinecraftForge.EVENT_BUS.addListener(ClientEventHandler::handleRenderLevelStageEvent);
     }
 
-    public static void handleRenderLivingEvent(RenderLivingEvent.Post<? extends LivingEntity, ? extends EntityModel<?>> event) {
+    public static void handleRenderLivingEvent(RenderLivingEvent.Pre<? extends LivingEntity, ? extends EntityModel<?>> event) {
         if (event.isCanceled() || !event.getEntity().level.isClientSide()) {
             return;
         }
