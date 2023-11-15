@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.20.x-0.0.0.6-beta1]
+
+## Changed
+
+- Raise priority of renderLivingEvent handler, implicit compat fix with Epic Fight mod
+
+## [1.19.x-0.0.0.6-beta1]
+
+## Changed
+
+- Raise priority of renderLivingEvent handler, implicit compat fix with Epic Fight mod
+
+## [1.20.x-0.0.0.5-beta1]
+
+## Changed
+
+- Ported to 1.20
+
 ## [1.19.2-0.0.0.5-beta1]
 
 ### Added
