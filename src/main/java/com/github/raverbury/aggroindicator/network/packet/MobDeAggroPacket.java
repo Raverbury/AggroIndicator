@@ -27,7 +27,7 @@ public class MobDeAggroPacket {
 
     public boolean handle(Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> AlertRenderer.setTarget(mobUuid, null)));
+        context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> AlertRenderer.setTarget(mobUuid, null, false)));
         context.setPacketHandled(true);
         return true;
     }

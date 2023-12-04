@@ -2,19 +2,24 @@ package com.github.raverbury.aggroindicator.event;
 
 import com.github.raverbury.aggroindicator.AggroIndicator;
 import com.github.raverbury.aggroindicator.config.ServerConfig;
+import com.github.raverbury.aggroindicator.util.IAggroIndicatorAttackGoal;
 import com.github.raverbury.aggroindicator.network.NetworkHandler;
 import com.github.raverbury.aggroindicator.network.packet.MobDeAggroPacket;
 import com.github.raverbury.aggroindicator.network.packet.MobTargetPlayerPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class ServerEventHandler {
 
@@ -33,9 +38,28 @@ public class ServerEventHandler {
 //            AggroIndicator.LOGGER.debug("Should send deaggro packet");
         }
         if (shouldSendAggroPacket(event)) {
-            NetworkHandler.sendToPlayer(new MobTargetPlayerPacket(event.getEntity().getUUID(), event.getNewTarget().getUUID()), (ServerPlayer) event.getNewTarget());
 //            AggroIndicator.LOGGER.debug("Should send aggro packet");
+            NetworkHandler.sendToPlayer(new MobTargetPlayerPacket(event.getEntity().getUUID(), event.getNewTarget().getUUID(), isAboutToAttack(event.getEntity())), (ServerPlayer) event.getNewTarget());
         }
+    }
+
+    public static boolean isAboutToAttack(LivingEntity attacker) {
+        Mob mob = (Mob) attacker;
+        Set<WrappedGoal> goals = mob.goalSelector.getAvailableGoals();
+        final boolean[] a = {false};
+        goals.forEach(wrappedGoal -> {
+//            AggroIndicator.LOGGER.info(wrappedGoal.getGoal().toString());
+            IAggroIndicatorAttackGoal aggroIndicatorAttackGoal = (wrappedGoal.getGoal() instanceof IAggroIndicatorAttackGoal)?
+                    (IAggroIndicatorAttackGoal) wrappedGoal.getGoal() : null;
+            if (aggroIndicatorAttackGoal != null) {
+//                AggroIndicator.LOGGER.info(aggroIndicatorAttackGoal.isAboutToAttack(getCurrentTarget(mob))? "YO" : "NO");
+                if (aggroIndicatorAttackGoal.isAboutToAttack(getCurrentTarget(mob))) {
+                    a[0] = true;
+                }
+            }
+        });
+//        AggroIndicator.LOGGER.info(a[0]? "KILL" : "NO KILL pls");
+        return a[0];
     }
 
     public static void handleLivingDeathEvent(LivingDeathEvent event) {
@@ -90,7 +114,7 @@ public class ServerEventHandler {
 
         final boolean NEW_TARGET_IS_DIFFERENT = oldTarget == null || !oldTarget.is(newTarget);
 
-        return IS_TARGETING_PLAYER && NEW_TARGET_IS_DIFFERENT;
+        return IS_TARGETING_PLAYER;
     }
 
     private static LivingEntity getCurrentTarget(LivingEntity entity) {

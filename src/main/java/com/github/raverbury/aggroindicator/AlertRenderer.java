@@ -21,8 +21,9 @@ import java.util.*;
 public class AlertRenderer {
 
     private static final List<LivingEntity> renderedEntities = new ArrayList<>();
-    private static final Set<UUID> entityUuidSet = new HashSet<>();
+    private static final Map<UUID, Boolean> entityUuidMap = new HashMap<UUID, Boolean>();
     private static final ResourceLocation ALERT_ICON = new ResourceLocation(AggroIndicator.MODID + ":textures/mgs_alert_icon.png");
+    private static final ResourceLocation ALERT_ICON_DANGER = new ResourceLocation(AggroIndicator.MODID + ":textures/mgs_alert_icon_danger.png");
 
     public static void addEntity(LivingEntity entity) {
         if (entity == null) {
@@ -31,7 +32,7 @@ public class AlertRenderer {
         renderedEntities.add(entity);
     }
 
-    public static void setTarget(UUID mobUuid, UUID targetUuid) {
+    public static void setTarget(UUID mobUuid, UUID targetUuid, boolean isAboutToAttack) {
         Minecraft client = Minecraft.getInstance();
         Player player = client.player;
         if (player == null) {
@@ -39,16 +40,16 @@ public class AlertRenderer {
         }
         // AggroIndicator.LOGGER.debug(mobUuid.toString() + (targetUuid != null? targetUuid.toString() : "no target") + player.getUUID().toString());
         if ((targetUuid == null) || !player.getUUID().equals(targetUuid)) {
-            entityUuidSet.remove(mobUuid);
+            entityUuidMap.remove(mobUuid);
             // AggroIndicator.LOGGER.debug(entityUuidSet.toString());
             return;
         }
-        entityUuidSet.add(mobUuid);
+        entityUuidMap.put(mobUuid, isAboutToAttack);
         // AggroIndicator.LOGGER.debug(entityUuidSet.toString());
     }
 
     public static boolean shouldDrawThisUuid(UUID uuid) {
-        return entityUuidSet.contains(uuid);
+        return entityUuidMap.containsKey(uuid);
     }
 
     public static void renderAlertIcon(float partialTick, PoseStack matrix, Camera camera) {
@@ -98,7 +99,10 @@ public class AlertRenderer {
                 size *= (size > 2) ? 0.9 : 1.0;
                 matrix.scale(size, size, size);
             }
-            _render(matrix, ClientConfig.X_OFFSET.get(), -(7f + ClientConfig.Y_OFFSET.get()), ClientConfig.ALERT_ICON_SIZE.get().floatValue());
+            boolean isAboutToAttack = entityUuidMap.getOrDefault(entity.getUUID(), false);
+//            AggroIndicator.LOGGER.info(entityUuidMap.getOrDefault(entity.getUUID(), false)? "TRUE" :
+//                    entityUuidMap.containsKey(entity.getUUID()) ? "HAS KEY BUT FALSE" : "NO KEY");
+            _render(matrix, ClientConfig.X_OFFSET.get(), -(7f + ClientConfig.Y_OFFSET.get()), ClientConfig.ALERT_ICON_SIZE.get().floatValue(), isAboutToAttack);
 
             matrix.popPose();
         }
@@ -106,10 +110,15 @@ public class AlertRenderer {
         renderedEntities.clear();
     }
 
-    private static void _render(PoseStack matrix, double x, double y, float size) {
+    private static void _render(PoseStack matrix, double x, double y, float size, boolean isAboutToAttack) {
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, ALERT_ICON);
+        if (isAboutToAttack) {
+            RenderSystem.setShaderTexture(0, ALERT_ICON_DANGER);
+        }
+        else {
+            RenderSystem.setShaderTexture(0, ALERT_ICON);
+        }
         RenderSystem.enableBlend();
 
         Matrix4f m4f = matrix.last().pose();
