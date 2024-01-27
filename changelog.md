@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.20.x-1.0.0.0]
+
+## Changed
+
+- Change the way the mod checks for mob rendering since RenderLivingEvent refused to fire when dealing with mobs from 
+certain mods
+- Use new alert icon
+
+## Fixed
+
+- Aggro not showing on mobs from several mods, including Creeper Overhaul, Enderman Overhaul, Naturalist and maybe more
+
 ## [1.20.x-0.0.0.6-beta1]
 
 ## Changed
