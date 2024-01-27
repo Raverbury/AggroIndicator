@@ -28,7 +28,7 @@ public class ClientConfig {
         RENDER_RANGE = CLIENT_BUILDER
                 .comment("Only render alert icons for mobs within this range")
                 .translation("config.client.renderRange")
-                .defineInRange("renderRange", 64, 8, 64);
+                .defineInRange("renderRange", 32, 8, 64);
 
         X_OFFSET = CLIENT_BUILDER
                 .comment("Adjusts the horizontal placement of alert icons")
@@ -38,7 +38,7 @@ public class ClientConfig {
         Y_OFFSET = CLIENT_BUILDER
                 .comment("Adjusts the vertical placement of alert icons")
                 .translation("config.client.yOffset")
-                .defineInRange("yOffset", 0, -10, (double) 10);
+                .defineInRange("yOffset", 0, -10, (double) 50);
 
         ALERT_ICON_SIZE = CLIENT_BUILDER
                 .comment("Adjust the size of alert icons")

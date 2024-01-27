@@ -22,7 +22,7 @@ public class AlertRenderer {
 
     private static final List<LivingEntity> renderedEntities = new ArrayList<>();
     private static final Set<UUID> entityUuidSet = new HashSet<>();
-    private static final ResourceLocation ALERT_ICON = new ResourceLocation(AggroIndicator.MODID + ":textures/mgs_alert_icon.png");
+    private static final ResourceLocation ALERT_ICON = new ResourceLocation(AggroIndicator.MODID + ":textures/alert_icon.png");
 
     public static void addEntity(LivingEntity entity) {
         if (entity == null) {
@@ -95,7 +95,7 @@ public class AlertRenderer {
             matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
             if (ClientConfig.SCALE_WITH_MOB_SIZE.get()) {
                 float size = (float) entity.getBoundingBox().getSize();
-                size *= (size > 2) ? 0.9 : 1.0;
+                size *= (size > 2) ? 0.9f : 1.0f;
                 matrix.scale(size, size, size);
             }
             _render(matrix, ClientConfig.X_OFFSET.get(), -(7f + ClientConfig.Y_OFFSET.get()), ClientConfig.ALERT_ICON_SIZE.get().floatValue());
@@ -119,10 +119,10 @@ public class AlertRenderer {
         BufferBuilder buffer = tesselator.getBuilder();
 
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.vertex(m4f, (float) (-halfWidth + x), (float) y, -0.1f).uv(0f, 0f).endVertex();
-        buffer.vertex(m4f, (float) (-halfWidth + x), (float) (size + y), -0.1f).uv(0f, 1f).endVertex();
-        buffer.vertex(m4f, (float) (halfWidth + x), (float) (size + y), -0.1f).uv(1f, 1f).endVertex();
-        buffer.vertex(m4f, (float) (halfWidth + x), (float) y, 0f).uv(1f, -0.1f).endVertex();
+        buffer.vertex(m4f, (float) (-halfWidth + x), (float) y, 0.25f).uv(0f, 0f).endVertex();
+        buffer.vertex(m4f, (float) (-halfWidth + x), (float) (size + y), 0.25f).uv(0f, 1f).endVertex();
+        buffer.vertex(m4f, (float) (halfWidth + x), (float) (size + y), 0.25f).uv(1f, 1f).endVertex();
+        buffer.vertex(m4f, (float) (halfWidth + x), (float) y, 0.25f).uv(1f, 0f).endVertex();
         tesselator.end();
     }
 

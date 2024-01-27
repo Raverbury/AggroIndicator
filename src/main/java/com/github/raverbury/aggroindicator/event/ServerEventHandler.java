@@ -24,17 +24,19 @@ public class ServerEventHandler {
     }
 
     public static void handleLivingChangeTargetEvent(LivingChangeTargetEvent event) {
-        // AggroIndicator.LOGGER.debug("LCTE fired" + ((getCurrentTarget(event.getEntity()) != null)? getCurrentTarget(event.getEntity()).toString() : "no og target") + ((event.getNewTarget() != null)? event.getNewTarget().toString() : "no new target"));
+        // if (getCurrentTarget(event.getEntity()) != event.getNewTarget()) {
+            // AggroIndicator.LOGGER.info("LCTE fired with diff: " + ((getCurrentTarget(event.getEntity()) != null)? getCurrentTarget(event.getEntity()).getName() : "no og target") + ((event.getNewTarget() != null)? event.getNewTarget().getName() : "no new target"));
+        // }
         if (event.isCanceled() || event.getEntity() == null || event.getEntity().level().isClientSide()) {
             return;
         }
         if (shouldSendDeAggroPacket(event)) {
             NetworkHandler.sendToPlayer(new MobDeAggroPacket(event.getEntity().getUUID()), (ServerPlayer) getCurrentTarget(event.getEntity()));
-//            AggroIndicator.LOGGER.debug("Should send deaggro packet");
+            // AggroIndicator.LOGGER.info("Should send deaggro packet");
         }
         if (shouldSendAggroPacket(event)) {
             NetworkHandler.sendToPlayer(new MobTargetPlayerPacket(event.getEntity().getUUID(), event.getNewTarget().getUUID()), (ServerPlayer) event.getNewTarget());
-//            AggroIndicator.LOGGER.debug("Should send aggro packet");
+            // AggroIndicator.LOGGER.info("Should send aggro packet");
         }
     }
 
@@ -83,6 +85,7 @@ public class ServerEventHandler {
             }
         }
         if (IS_BLACKLISTED) {
+            // AggroIndicator.LOGGER.info("Mob is blacklisted");
             return false;
         }
 
