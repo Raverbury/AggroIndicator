@@ -4,7 +4,6 @@ import com.github.raverbury.aggroindicator.common.AggroIndicator;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
@@ -23,30 +22,21 @@ public class AlertRenderer {
 
     private static final List<LivingEntity> renderedEntities = new ArrayList<>();
     private static final Set<UUID> entityUuidSet = new HashSet<>();
-    private static final Identifier ALERT_ICON = new Identifier(AggroIndicator.MODID + ":textures/alert_icon.png");
+    private static final Identifier ALERT_ICON = new Identifier(AggroIndicator.MOD_ID + ":textures/alert_icon.png");
 
-    public static void addEntity(LivingEntity entity) {
+    public static void addRenderedEntities(LivingEntity entity) {
         if (entity == null) {
             return;
         }
-
         renderedEntities.add(entity);
     }
 
-    public static void setTarget(UUID mobUuid, UUID targetUuid) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        ClientPlayerEntity player = client.player;
-        if (player == null) {
-            return;
-        }
-        // AggroIndicator.LOGGER.debug(mobUuid.toString() + (targetUuid != null? targetUuid.toString() : "no target") + player.getUUID().toString());
-        if ((targetUuid == null) || !player.getUuid().equals(targetUuid)) {
-            entityUuidSet.remove(mobUuid);
-            // AggroIndicator.LOGGER.debug(entityUuidSet.toString());
-            return;
-        }
+    public static void addMobTargetingThisClientPlayer(UUID mobUuid) {
         entityUuidSet.add(mobUuid);
-        // AggroIndicator.LOGGER.debug(entityUuidSet.toString());
+    }
+
+    public static void removeMobTargetingThisClientPlayer(UUID mobUuid) {
+        entityUuidSet.remove(mobUuid);
     }
 
     public static boolean shouldDrawThisUuid(UUID uuid) {
@@ -76,14 +66,13 @@ public class AlertRenderer {
                 GL11.GL_ZERO);
 
         for (LivingEntity entity : renderedEntities) {
-
             float scaleToGui = 0.025f;
             boolean sneaking = entity.isSneaking();
             float height = (float) (entity.getBoundingBox().getLengthY()) + 0.6F - (sneaking ? 0.25F : 0.0F);
 
-            double x = MathHelper.lerp((double) partialTick, entity.prevX, entity.getX());
-            double y = MathHelper.lerp((double) partialTick, entity.prevY, entity.getY());
-            double z = MathHelper.lerp((double) partialTick, entity.prevZ, entity.getZ());
+            double x = MathHelper.lerp(partialTick, entity.prevX, entity.getX());
+            double y = MathHelper.lerp(partialTick, entity.prevY, entity.getY());
+            double z = MathHelper.lerp(partialTick, entity.prevZ, entity.getZ());
 
             Vec3d camPos = camera.getPos();
             double camX = camPos.getX();
@@ -92,12 +81,14 @@ public class AlertRenderer {
 
             matrix.push();
             matrix.translate(x - camX, (y + height) - camY, z - camZ);
-            Vec3d YP = new Vec3d(0.0f, 1.0f, 0.0f);
+            Vector3f YP = new Vector3f(0.0f, 1.0f, 0.0f);
             matrix.multiply(
-                    MathHelper.rotateAround(new Vector3f(0f, 1f, 0f),
+                    MathHelper.rotateAround(YP,
                             new Quaternionf().rotationY((float) (-camera.getYaw() * Math.PI / 180)),
                             new Quaternionf()));
             matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
+
+            // config reader, except no config just yet so this is commented out
             // if (ClientConfig.SCALE_WITH_MOB_SIZE.get()) {
             //     float size = (float) entity.getBoundingBox().getSize();
             //     size *= (size > 2) ? 0.9f : 1.0f;
@@ -105,6 +96,7 @@ public class AlertRenderer {
             // }
             // _render(matrix, ClientConfig.X_OFFSET.get(), -(7f + ClientConfig.Y_OFFSET.get()),
             //         ClientConfig.ALERT_ICON_SIZE.get().floatValue());
+
             _render(matrix, 0, -(7f + 20), 30f);
 
             matrix.pop();
@@ -114,7 +106,6 @@ public class AlertRenderer {
     }
 
     private static void _render(MatrixStack matrix, double x, double y, float size) {
-
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderTexture(0, ALERT_ICON);
         RenderSystem.enableBlend();
@@ -122,8 +113,8 @@ public class AlertRenderer {
         Matrix4f m4f = matrix.peek().getPositionMatrix();
         float halfWidth = size / 2;
 
-        Tessellator tesselator = Tessellator.getInstance();
-        BufferBuilder buffer = tesselator.getBuffer();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
 
         VertexFormat format = new VertexFormat(
                 ImmutableMap.<String, VertexFormatElement>builder().put("Position",
@@ -137,7 +128,7 @@ public class AlertRenderer {
         buffer.vertex(m4f, (float) (-halfWidth + x), (float) (size + y), 0.25f).texture(0f, 1f).next();
         buffer.vertex(m4f, (float) (halfWidth + x), (float) (size + y), 0.25f).texture(1f, 1f).next();
         buffer.vertex(m4f, (float) (halfWidth + x), (float) y, 0.25f).texture(1f, 0f).next();
-        tesselator.draw();
+        tessellator.draw();
     }
 
 }
