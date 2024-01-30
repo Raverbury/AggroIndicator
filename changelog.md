@@ -1,5 +1,11 @@
 # Changelog
 
+## [fabric_1.20.4_1.0.0.0_beta1]
+
+## Added
+
+- Port to Fabric 1.20.4, no config for now
+
 ## [1.20.x-1.0.0.0]
 
 ## Changed
