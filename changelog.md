@@ -2,43 +2,43 @@
 
 ## [neoforge_1.20.4_1.0.0]
 
-## Added
+### Added
 
 - Port to neoforge 1.20.4
 
 ## [fabric_1.20.4_1.0.0.0_beta1]
 
-## Added
+### Added
 
 - Port to Fabric 1.20.4, no config for now
 
 ## [1.20.x-1.0.0.0]
 
-## Changed
+### Changed
 
 - Change the way the mod checks for mob rendering since RenderLivingEvent refused to fire when dealing with mobs from 
 certain mods
 - Use new alert icon
 
-## Fixed
+### Fixed
 
 - Aggro not showing on mobs from several mods, including Creeper Overhaul, Enderman Overhaul, Naturalist and maybe more
 
 ## [1.20.x-0.0.0.6-beta1]
 
-## Changed
+### Changed
 
 - Raise priority of renderLivingEvent handler, implicit compat fix with Epic Fight mod
 
 ## [1.19.x-0.0.0.6-beta1]
 
-## Changed
+### Changed
 
 - Raise priority of renderLivingEvent handler, implicit compat fix with Epic Fight mod
 
 ## [1.20.x-0.0.0.5-beta1]
 
-## Changed
+### Changed
 
 - Ported to 1.20
 
