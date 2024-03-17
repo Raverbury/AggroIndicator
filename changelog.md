@@ -1,5 +1,11 @@
 # Changelog
 
+## [neoforge_1.20.4_1.0.0]
+
+## Added
+
+- Port to neoforge 1.20.4
+
 ## [fabric_1.20.4_1.0.0.0_beta1]
 
 ## Added
