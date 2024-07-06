@@ -6,6 +6,8 @@
     "ForgetAttackTargetTaskMixin",
     "MobChangeTargetMixin",
     "PacifyTaskMixin",
+    "PrepareRamTaskMixin",
+    "RamImpactTaskMixin",
     "UpdateAttackTargetTaskMixin"
   ],
   "injectors": {
