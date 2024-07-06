@@ -3,7 +3,10 @@
   "package": "com.github.raverbury.aggroindicator.common.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MobChangeTargetMixin"
+    "ForgetAttackTargetTaskMixin",
+    "MobChangeTargetMixin",
+    "PacifyTaskMixin",
+    "UpdateAttackTargetTaskMixin"
   ],
   "injectors": {
     "defaultRequire": 1
