@@ -39,6 +39,10 @@ public class AlertRenderer {
         entityUuidSet.remove(mobUuid);
     }
 
+    public static void clearMobsTargetingThisClientPlayer() {
+        entityUuidSet.clear();
+    }
+
     public static boolean shouldDrawThisUuid(UUID uuid) {
         return entityUuidSet.contains(uuid);
     }
