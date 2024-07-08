@@ -1,4 +1,4 @@
-package com.github.raverbury.aggroindicator.common.mixin;
+package com.github.raverbury.aggroindicator.common.mixins;
 
 import com.github.raverbury.aggroindicator.common.events.EntityTickEventCallback;
 import net.minecraft.entity.Entity;
@@ -10,11 +10,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {
-    // @Inject(method = "tickEntity", at = @At(value = "INVOKE", target = "Lnet" + "/minecraft/entity/Entity;tick()V"))
-    // private void aggroIndicator$entityPreTick(Entity entity, CallbackInfo ci) {
-    //     EntityTickEventCallback.EVENT.invoker().interact(entity);
-    // }
-
+    /**
+     * Dispatch an EntityTick after entity is ticked
+     * @param entity
+     * @param ci
+     */
     @Inject(method = "tickEntity", at = @At(value = "INVOKE", target = "Lnet" + "/minecraft/entity/Entity;tick()V", shift = At.Shift.AFTER))
     private void aggroIndicator$entityPostTick(Entity entity, CallbackInfo ci) {
         EntityTickEventCallback.EVENT.invoker().interact(entity);

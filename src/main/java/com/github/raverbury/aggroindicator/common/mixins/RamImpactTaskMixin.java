@@ -1,4 +1,4 @@
-package com.github.raverbury.aggroindicator.common.mixin;
+package com.github.raverbury.aggroindicator.common.mixins;
 
 import com.github.raverbury.aggroindicator.common.events.LivingChangeTargetCallback;
 import net.minecraft.entity.ai.brain.task.RamImpactTask;

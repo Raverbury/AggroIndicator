@@ -38,10 +38,10 @@ public class AggroIndicatorClient implements ClientModInitializer {
                 return;
             }
 
-            // if (player.hasStatusEffect(StatusEffects.BLINDNESS)
-            //         || player.hasStatusEffect(StatusEffects.DARKNESS)) {
-            //     return;
-            // }
+            if (player.hasStatusEffect(StatusEffects.BLINDNESS)
+                    || player.hasStatusEffect(StatusEffects.DARKNESS)) {
+                return;
+            }
 
             List<MobEntity> mobs = world.getEntitiesByClass(MobEntity.class,
                     player.getBoundingBox().expand(32),

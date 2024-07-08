@@ -28,9 +28,18 @@ public class AggroIndicator implements ModInitializer {
     public static final String MOD_ID = "aggroindicator";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+    /**
+     * A non-persistent attachment type used to store targeting information
+     */
     public static final AttachmentType<UUID> TARGET_UUID_ATTACHMENT = AttachmentRegistry.create(
             new Identifier(MOD_ID, "attack_target_uuid"));
 
+    /**
+     * Save current target as attachment to mob using Fabric API's attachment
+     *
+     * @param entity
+     * @param target
+     */
     private static void saveCurrentTarget(LivingEntity entity, LivingEntity target) {
         if (!(entity instanceof MobEntity)) {
             return;
@@ -42,6 +51,11 @@ public class AggroIndicator implements ModInitializer {
         }
     }
 
+    /**
+     * Read old target from attachment or resolve to null if empty
+     *
+     * @param entity
+     */
     private static LivingEntity getOldTarget(LivingEntity entity) {
         UUID targetUuid = entity.getAttachedOrGet(TARGET_UUID_ATTACHMENT,
                 () -> {
@@ -59,6 +73,8 @@ public class AggroIndicator implements ModInitializer {
     }
 
     public void registerCommonEventHandlers() {
+        // handler responsible for sending targeting packets to players
+        // and saving targeting info to mobs
         LivingChangeTargetCallback.EVENT.register((mob, newTarget) -> {
             if (mob.getWorld().isClient) {
                 return ActionResult.PASS;
@@ -66,10 +82,15 @@ public class AggroIndicator implements ModInitializer {
 
             @Nullable LivingEntity oldTarget = getOldTarget(mob);
 
-            LOGGER.info(mob.getName()
-                    .getString() + " switches target from " + (oldTarget != null ? oldTarget.getName()
-                    .getString() : "null") + " to " + (newTarget != null ? newTarget.getName()
-                    .getString() : "null"));
+            // if target hasn't changed then skip
+            if (oldTarget == newTarget) {
+                return ActionResult.PASS;
+            }
+
+            // LOGGER.info(mob.getName()
+            //         .getString() + " switches target from " + (oldTarget != null ? oldTarget.getName()
+            //         .getString() : "null") + " to " + (newTarget != null ? newTarget.getName()
+            //         .getString() : "null"));
 
             // old target is player then send packet to that player with playerIsNewTarget = false
             if (oldTarget instanceof PlayerEntity) {
@@ -88,19 +109,30 @@ public class AggroIndicator implements ModInitializer {
             }
 
             // save this target as attachment to the mob
-            // this is needed over Mob#getTarget since hog/zoglins
+            // this is needed over Mob#getTarget since some newer mobs
             // don't touch the Mob#target property at all
-            // also stores info for the future
+            // also stores info for future comparison
             saveCurrentTarget(mob, newTarget);
 
             return ActionResult.PASS;
         });
+        // this should fire after an entity is ticked
+        // so its current target will be the new target
+        // it has acquired during that tick
+        // I have to resort to do it this way since I'm sick of having to
+        // look in 10 different tasks to know what sets and unsets memories
+        // 7 extra mixins just to effectively check ATTACK_TARGET
+        // memory is not it
         EntityTickEventCallback.EVENT.register(entity -> {
             if (entity.getWorld().isClient()) {
                 return ActionResult.PASS;
             }
+
+            // edge case with goat, handled by ram related mixins
+            // so we exclude that here, ugly, but it works
             if (entity instanceof MobEntity mob && !(entity instanceof GoatEntity)) {
                 LivingEntity oldTarget = getOldTarget(mob);
+
                 // get current target the normal way
                 LivingEntity newTarget = mob.getTarget();
                 // if null then try reading from memory
@@ -111,6 +143,7 @@ public class AggroIndicator implements ModInitializer {
                         newTarget = optionalTarget.get();
                     }
                 }
+
                 // if target has changed, dispatch lct
                 if (newTarget != oldTarget) {
                     LivingChangeTargetCallback.EVENT.invoker()
