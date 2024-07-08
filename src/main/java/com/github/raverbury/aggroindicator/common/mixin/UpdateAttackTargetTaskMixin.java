@@ -1,17 +1,17 @@
 package com.github.raverbury.aggroindicator.common.mixin;
 
+import com.github.raverbury.aggroindicator.common.AggroIndicator;
 import com.github.raverbury.aggroindicator.common.events.LivingChangeTargetCallback;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.ai.brain.task.Task;
-import net.minecraft.entity.ai.brain.task.TaskTriggerer;
+import net.minecraft.entity.ai.brain.MemoryQueryResult;
 import net.minecraft.entity.ai.brain.task.UpdateAttackTargetTask;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -19,46 +19,25 @@ import java.util.function.Predicate;
 
 @Mixin(UpdateAttackTargetTask.class)
 public class UpdateAttackTargetTaskMixin {
-
-    @Inject(at = @At(value = "RETURN"), method = "create(Ljava/util/function" + "/Predicate;Ljava/util/function/Function;)" + "Lnet/minecraft/entity/ai/brain/task/Task;", cancellable = true)
-    private static <E extends MobEntity> void create(Predicate<E> startCondition, Function<E, Optional<? extends LivingEntity>> targetGetter, CallbackInfoReturnable<Task<E>> cir) {
-        cir.setReturnValue(TaskTriggerer.task((context) -> {
-            return context.group(
-                            context.queryMemoryAbsent(MemoryModuleType.ATTACK_TARGET),
-                            context.queryMemoryOptional(
-                                    MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
-                    .apply(context,
-                            (attackTarget, cantReachWalkTargetSince) -> {
-                                return (world, entity, time) -> {
-                                    if (!startCondition.test(entity)) {
-                                        return false;
-                                    } else {
-                                        Optional<? extends LivingEntity> optional = targetGetter.apply(
-                                                entity);
-                                        if (optional.isEmpty()) {
-                                            return false;
-                                        } else {
-                                            LivingEntity livingEntity = (LivingEntity) optional.get();
-                                            if (!entity.canTarget(
-                                                    livingEntity)) {
-                                                return false;
-                                            } else {
-                                                ActionResult result = LivingChangeTargetCallback.EVENT.invoker()
-                                                        .interact(entity,
-                                                                livingEntity);
-                                                if (result == ActionResult.FAIL) {
-                                                    return false;
-                                                }
-                                                attackTarget.remember(
-                                                        livingEntity);
-                                                cantReachWalkTargetSince.forget();
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                };
-                            });
-        }));
-        cir.cancel();
-    }
+    /**
+     * Dispatch LCT with attack target
+     *
+     * @param predicate
+     * @param function
+     * @param memoryQueryResult
+     * @param memoryQueryResult2
+     * @param world
+     * @param entity
+     * @param time
+     * @param cir
+     * @param optional
+     * @param livingEntity
+     * @param <E>
+     */
+    // @Inject(method = "method_47123(Ljava/util/function/Predicate;" + "Ljava" + "/util/function/Function;" + "Lnet/minecraft/entity/ai/brain" + "/MemoryQueryResult;" + "Lnet/minecraft/entity/ai/brain" + "/MemoryQueryResult;" + "Lnet/minecraft/server/world/ServerWorld;" + "Lnet/minecraft/entity/mob/MobEntity;J)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai" + "/brain/MemoryQueryResult;remember(Ljava/lang/Object;)V"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    // private static <E extends MobEntity> void aggroIndicator$dispatchLCTWithAttackTargetWhenRemember(Predicate predicate, Function function, MemoryQueryResult memoryQueryResult, MemoryQueryResult memoryQueryResult2, ServerWorld world, MobEntity entity, long time, CallbackInfoReturnable<Boolean> cir, Optional optional, LivingEntity livingEntity) {
+    //     AggroIndicator.LOGGER.debug("update attack target");
+    //     LivingChangeTargetCallback.EVENT.invoker()
+    //             .interact(entity, livingEntity);
+    // }
 }

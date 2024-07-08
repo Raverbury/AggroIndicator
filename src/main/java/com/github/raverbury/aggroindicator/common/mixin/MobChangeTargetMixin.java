@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MobEntity.class)
 public class MobChangeTargetMixin {
 
-    @Inject(at = @At(value = "HEAD"), method = "setTarget", cancellable = true)
-    private void setTarget(@Nullable LivingEntity target, CallbackInfo ci) {
-        ActionResult result = LivingChangeTargetCallback.EVENT.invoker().interact((MobEntity) (Object) this, target);
-
-        if (result == ActionResult.FAIL) {
-            ci.cancel();
-        }
-    }
+    // @Inject(at = @At(value = "HEAD"), method = "setTarget", cancellable = true)
+    // private void setTarget(@Nullable LivingEntity target, CallbackInfo ci) {
+    //     ActionResult result = LivingChangeTargetCallback.EVENT.invoker().interact((MobEntity) (Object) this, target);
+    //
+    //     if (result == ActionResult.FAIL) {
+    //         ci.cancel();
+    //     }
+    // }
 }

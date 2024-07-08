@@ -20,11 +20,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(RamImpactTask.class)
 public class RamImpactTaskMixin {
 
+    /**
+     * Dispatch LCT with null target because here, status 59 is sent
+     *
+     * @param world
+     * @param goat
+     * @param ci
+     */
     @Inject(at = @At(value = "RETURN"), method = "finishRam")
-    private void finishRam(ServerWorld world, GoatEntity goat, CallbackInfo ci) {
-        // status 59 is sent here, so we dispatch LCT with null
-        LivingChangeTargetCallback.EVENT.invoker()
-                .interact(goat, null);
+    private void aggroIndicator$dispatchLCTWithNullOnFinishRam(ServerWorld world, GoatEntity goat, CallbackInfo ci) {
+        LivingChangeTargetCallback.EVENT.invoker().interact(goat, null);
     }
 
 }

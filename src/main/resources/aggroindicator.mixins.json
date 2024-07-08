@@ -3,12 +3,16 @@
   "package": "com.github.raverbury.aggroindicator.common.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "EntityMixin",
     "ForgetAttackTargetTaskMixin",
     "MobChangeTargetMixin",
     "PacifyTaskMixin",
+    "PiglinBrainMixin",
     "PrepareRamTaskMixin",
     "RamImpactTaskMixin",
-    "UpdateAttackTargetTaskMixin"
+    "ServerWorldMixin",
+    "UpdateAttackTargetTaskMixin",
+    "WalkToNearestVisibleWantedItemTaskMixin"
   ],
   "injectors": {
     "defaultRequire": 1
