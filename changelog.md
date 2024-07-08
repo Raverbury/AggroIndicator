@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.1-beta1+fabric1.20.4]
+
+### Added
+
+- Show aggro icon when goat is preparing to ram
+- Clear client aggro list on world leave
+
+### Fixed
+
+- Fix aggro icon not showing for Hoglin and Zoglin
+- Fix aggro icon not properly reflecting Piglin's current behavior
+- Fix not removing entry in client aggro list on mob death
+
+### Changed
+
+- Slightly lower y-offset for aggro icon
+
 ## [neoforge_1.20.4_1.0.0]
 
 ### Added
