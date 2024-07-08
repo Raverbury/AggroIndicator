@@ -101,7 +101,7 @@ public class AlertRenderer {
             // _render(matrix, ClientConfig.X_OFFSET.get(), -(7f + ClientConfig.Y_OFFSET.get()),
             //         ClientConfig.ALERT_ICON_SIZE.get().floatValue());
 
-            _render(matrix, 0, -(7f + 20), 30f);
+            _render(matrix, 0, -(7f + 10), 30f);
 
             matrix.pop();
         }
