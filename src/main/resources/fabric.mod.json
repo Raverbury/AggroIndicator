@@ -3,15 +3,15 @@
 	"id": "aggroindicator",
 	"version": "${version}",
 	"name": "AggroIndicator",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Display an alert icon above mobs that are aggroing onto you.",
 	"authors": [
 		"Me!"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/Raverbury/AggroIndicator",
+		"sources": "https://github.com/Raverbury/AggroIndicator"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/aggroindicator/icon.png",
 	"environment": "*",
 	"entrypoints": {
