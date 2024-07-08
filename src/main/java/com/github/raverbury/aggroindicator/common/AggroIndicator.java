@@ -2,6 +2,7 @@ package com.github.raverbury.aggroindicator.common;
 
 import com.github.raverbury.aggroindicator.common.events.EntityTickEventCallback;
 import com.github.raverbury.aggroindicator.common.events.LivingChangeTargetCallback;
+import com.github.raverbury.aggroindicator.common.mixins.LivingEntityAccess;
 import com.github.raverbury.aggroindicator.common.network.packets.S2CMobChangeTargetPacket;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
@@ -77,6 +78,9 @@ public class AggroIndicator implements ModInitializer {
         // and saving targeting info to mobs
         LivingChangeTargetCallback.EVENT.register((mob, newTarget) -> {
             if (mob.getWorld().isClient) {
+                return ActionResult.PASS;
+            }
+            if (((LivingEntityAccess) mob).getDead()) {
                 return ActionResult.PASS;
             }
 
