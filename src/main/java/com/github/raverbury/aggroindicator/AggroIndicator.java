@@ -40,7 +40,6 @@ public class AggroIndicator {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
-        modEventBus.addListener(ClientEventHandler::handleConfigEvent);
         ModLoadingContext.get()
                 .registerConfig(ModConfig.Type.SERVER, ServerConfig.INSTANCE);
         ModLoadingContext.get()

@@ -14,7 +14,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
@@ -28,6 +30,8 @@ public class ClientEventHandler {
                 ClientEventHandler::handleWorldUnloadEvent);
         MinecraftForge.EVENT_BUS.addListener(
                 ClientEventHandler::handleRenderLevelStageEvent);
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addListener(ClientEventHandler::handleConfigEvent);
     }
 
     public static void handleConfigEvent(ModConfigEvent event) {
