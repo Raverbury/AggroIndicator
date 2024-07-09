@@ -1,10 +1,8 @@
 package com.github.raverbury.aggroindicator.event;
 
-import com.github.raverbury.aggroindicator.AggroIndicator;
 import com.github.raverbury.aggroindicator.AlertRenderer;
 import com.github.raverbury.aggroindicator.config.ClientConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.effect.MobEffects;
@@ -14,8 +12,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
@@ -25,21 +24,24 @@ import java.util.regex.Pattern;
 public class ClientEventHandler {
 
     public static void register() {
-        // MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, ClientEventHandler::handleRenderLivingEvent);
-        MinecraftForge.EVENT_BUS.addListener(ClientEventHandler::handleRenderLevelStageEvent);
+        MinecraftForge.EVENT_BUS.addListener(
+                ClientEventHandler::handleWorldUnloadEvent);
+        MinecraftForge.EVENT_BUS.addListener(
+                ClientEventHandler::handleRenderLevelStageEvent);
     }
 
-    @Deprecated
-    public static void handleRenderLivingEvent(RenderLivingEvent<? extends LivingEntity, ? extends EntityModel<?>> event) {
-        // AggroIndicator.LOGGER.info(event.isCancelable() ? "is cancelable" : "not cancelable");
-        if (event.isCanceled() || !event.getEntity().level().isClientSide()) {
-            // AggroIndicator.LOGGER.info("Event is canceled: " + ((event.isCanceled()) ? "Y" : "N"));
+    public static void handleConfigEvent(ModConfigEvent event) {
+        if (event.getConfig().getSpec() == ClientConfig.INSTANCE) {
+            ClientConfig.Cached.reload();
+            AlertRenderer.reloadAggroIcon();
+        }
+    }
+
+    public static void handleWorldUnloadEvent(LevelEvent.Unload event) {
+        if (!event.getLevel().isClientSide()) {
             return;
         }
-        if (!shouldDrawAlert(event.getEntity())) {
-            return;
-        }
-        AlertRenderer.addEntity(event.getEntity());
+        AlertRenderer.clearAggroingMobs();
     }
 
     public static void handleRenderLevelStageEvent(RenderLevelStageEvent event) {
@@ -49,7 +51,7 @@ public class ClientEventHandler {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             return;
         }
-        if (!ClientConfig.RENDER_ALERT_ICON.get()) {
+        if (!ClientConfig.Cached.RENDER_ALERT_ICON) {
             return;
         }
         LocalPlayer player = Minecraft.getInstance().player;
@@ -58,17 +60,21 @@ public class ClientEventHandler {
             return;
         }
         List<Mob> nearbyMobs = level.getNearbyEntities(Mob.class,
-                TargetingConditions.forCombat().range(ClientConfig.RENDER_RANGE.get()).ignoreInvisibilityTesting()
-                        .ignoreLineOfSight(), player, player.getBoundingBox().inflate(ClientConfig.RENDER_RANGE.get()));
+                TargetingConditions.forCombat()
+                        .range(ClientConfig.Cached.RENDER_RANGE)
+                        .ignoreInvisibilityTesting().ignoreLineOfSight(),
+                player, player.getBoundingBox()
+                        .inflate(ClientConfig.Cached.RENDER_RANGE));
         if (nearbyMobs.isEmpty()) {
             return;
         }
-        for (Mob mob: nearbyMobs) {
+        for (Mob mob : nearbyMobs) {
             if (shouldDrawAlert(mob)) {
                 AlertRenderer.addEntity(mob);
             }
         }
-        AlertRenderer.renderAlertIcon(event.getPartialTick(), event.getPoseStack(),
+        AlertRenderer.renderAlertIcon(event.getPartialTick(),
+                event.getPoseStack(),
                 Minecraft.getInstance().gameRenderer.getMainCamera());
     }
 
@@ -76,7 +82,7 @@ public class ClientEventHandler {
         Minecraft minecraftClient = Minecraft.getInstance();
         Entity cameraEntity = minecraftClient.getCameraEntity();
         final boolean TOO_FAR_AWAY = cameraEntity == null || clientEntity.distanceTo(
-                cameraEntity) > ClientConfig.RENDER_RANGE.get();
+                cameraEntity) > ClientConfig.Cached.RENDER_RANGE;
         if (TOO_FAR_AWAY) {
             return false;
         }
@@ -87,10 +93,10 @@ public class ClientEventHandler {
         }
 
         String entityRegistryName = Objects.requireNonNull(
-                ForgeRegistries.ENTITY_TYPES.getKey(clientEntity.getType())).toString();
+                        ForgeRegistries.ENTITY_TYPES.getKey(clientEntity.getType()))
+                .toString();
         boolean IS_BLACKLISTED = false;
-        for (String item : ClientConfig.CLIENT_MOB_BLACKLIST.get()
-        ) {
+        for (String item : ClientConfig.Cached.CLIENT_MOB_BLACKLIST) {
             item = item.replace("*", ".*");
             Pattern pattern = Pattern.compile(item, Pattern.CASE_INSENSITIVE);
             if (pattern.matcher(entityRegistryName).matches()) {
@@ -104,12 +110,14 @@ public class ClientEventHandler {
         }
 
         Player player = Minecraft.getInstance().player;
-        final boolean ENTITY_IS_INVISIBLE = player == null || clientEntity.isInvisibleTo(player);
+        final boolean ENTITY_IS_INVISIBLE = player == null || clientEntity.isInvisibleTo(
+                player);
         if (ENTITY_IS_INVISIBLE) {
             return false;
         }
 
-        final boolean IS_TARGETING_CLIENT_PLAYER = AlertRenderer.shouldDrawThisUuid(clientEntity.getUUID());
+        final boolean IS_TARGETING_CLIENT_PLAYER = AlertRenderer.shouldDrawThisUuid(
+                clientEntity.getUUID());
         if (!IS_TARGETING_CLIENT_PLAYER) {
             // AggroIndicator.LOGGER.info("Mob is not targeting this player");
             return false;
