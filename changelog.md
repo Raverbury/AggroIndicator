@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0-beta1+forge1.20.1]
+
+### Added
+
+- Show aggro icon when goat is preparing to ram
+- Add more aggro icons and the ability to switch between them with configs
+- Clear client aggro list on world leave
+
+### Fixed
+
+- Fix aggro icon not properly reflecting Piglin's current behavior
+
+### Changed
+
+- Change the way the mod checks and compares targets similar to Fabric since standard Forge event hooks just aren't enough
+
 ## [1.0.1-beta1+fabric1.20.4]
 
 ### Added
