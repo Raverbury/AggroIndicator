@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.github.raverbury.aggroindicator.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "aggroindicator.refmap.json",
+  "mixins": [
+    "EntityMixin",
+    "ServerLevelMixin",
+    "LivingEntityAccess",
+    "PrepareRamNearestTargetMixin",
+    "RamTargetMixin"
+  ],
+  "client": [
+  ],
+  "minVersion": "0.8"
+}
