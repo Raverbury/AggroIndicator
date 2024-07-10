@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0-beta1+neoforge1.21]
+
+### Added
+
+- First port to Neoforge 1.21
+
 ## [1.1.0-beta1+forge1.20.1]
 
 ### Added
