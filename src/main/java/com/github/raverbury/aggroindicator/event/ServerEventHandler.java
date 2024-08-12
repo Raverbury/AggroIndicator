@@ -4,21 +4,25 @@ import com.github.raverbury.aggroindicator.config.ServerConfig;
 import com.github.raverbury.aggroindicator.mixin.LivingEntityAccess;
 import com.github.raverbury.aggroindicator.network.NetworkHandler;
 import com.github.raverbury.aggroindicator.network.packet.S2CMobChangeTargetPacket;
+import com.github.raverbury.aggroindicator.util.BrainAccess;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class ServerEventHandler {
@@ -27,13 +31,56 @@ public class ServerEventHandler {
 
     public static void register() {
         MinecraftForge.EVENT_BUS.addListener(
-                ServerEventHandler::handleEntityPostTickEvent);
+                ServerEventHandler::handleEntityJoinLevelEvent);
+        MinecraftForge.EVENT_BUS.addListener(
+                ServerEventHandler::handleLivingChangeTargetEvent);
+        MinecraftForge.EVENT_BUS.addListener(
+                ServerEventHandler::handleCustomLivingChangeTargetEvent);
         MinecraftForge.EVENT_BUS.addListener(
                 ServerEventHandler::handleLivingDeathEvent);
         MinecraftForge.EVENT_BUS.addListener(
                 ServerEventHandler::handleWorldUnloadEvent);
+        MinecraftForge.EVENT_BUS.addListener(
+                ServerEventHandler::handlePlayerLoggedOutEvent);
     }
 
+    /**
+     * Clear aggro list of mobs targeting a player that just disconnects
+     *
+     * @param event
+     */
+    public static void handlePlayerLoggedOutEvent(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() != null && event.getEntity().level()
+                .isClientSide()) {
+            return;
+        }
+        for (UUID mobUuid : aggroList.keySet()) {
+            if (aggroList.get(mobUuid) == event.getEntity().getUUID()) {
+                aggroList.remove(mobUuid);
+            }
+        }
+    }
+
+    /**
+     * Assign custom brainOwner field in BrainMixin with owner
+     *
+     * @param event
+     */
+    public static void handleEntityJoinLevelEvent(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        if (event.getEntity() instanceof LivingEntity livingEntity) {
+            ((BrainAccess) livingEntity.getBrain()).aggroIndicator$setBrainOwner(
+                    livingEntity);
+        }
+    }
+
+    /**
+     * Clear the aggro list on server world unload
+     *
+     * @param event
+     */
     public static void handleWorldUnloadEvent(LevelEvent.Unload event) {
         if (event.getLevel().isClientSide()) {
             return;
@@ -41,33 +88,20 @@ public class ServerEventHandler {
         aggroList.clear();
     }
 
-    public static void handleEntityPostTickEvent(EntityPostTickEvent event) {
-        if (event.getEntity() == null || event.getEntity().level()
+    public static void handleLivingChangeTargetEvent(LivingChangeTargetEvent event) {
+        if (!(event.getEntity() instanceof Mob) && event.getEntity().level()
                 .isClientSide()) {
             return;
         }
-        Entity entity = event.getEntity();
-        // edge case with goat, handled by ram related mixins
-        // so we exclude that here, ugly, but it works
-        if (entity instanceof Mob mob && !(entity instanceof Goat)) {
-            LivingEntity oldTarget = getOldTarget(mob);
+        processAggroChange((Mob) event.getEntity(), event.getNewTarget());
+    }
 
-            // get current target the normal way
-            LivingEntity newTarget = mob.getTarget();
-            // if null then try reading from memory
-            if (newTarget == null) {
-                Optional<LivingEntity> optionalTarget = mob.getBrain()
-                        .getMemoryInternal(MemoryModuleType.ATTACK_TARGET);
-                if (optionalTarget != null && optionalTarget.isPresent()) {
-                    newTarget = optionalTarget.get();
-                }
-            }
-
-            // if target has changed, dispatch lct
-            if (newTarget != oldTarget) {
-                processAggroChange(mob, newTarget);
-            }
+    public static void handleCustomLivingChangeTargetEvent(CustomLivingChangeTargetEvent event) {
+        if (!(event.getEntity() instanceof Mob) && event.getEntity().level()
+                .isClientSide()) {
+            return;
         }
+        processAggroChange((Mob) event.getEntity(), event.getTarget());
     }
 
     public static void handleLivingDeathEvent(LivingDeathEvent event) {
@@ -79,10 +113,7 @@ public class ServerEventHandler {
         processAggroChange((Mob) event.getEntity(), null);
     }
 
-    public static void processAggroChange(@Nonnull Mob mob, @Nullable LivingEntity newTarget) {
-        if (mob.level().isClientSide()) {
-            return;
-        }
+    private static void processAggroChange(@Nonnull Mob mob, @Nullable LivingEntity newTarget) {
         if (((LivingEntityAccess) mob).getDead()) {
             return;
         }
@@ -166,8 +197,8 @@ public class ServerEventHandler {
     /**
      * Write current target in aggro list
      *
-     * @param mob           The mob to retrieve target from
-     * @param currentTarget The mob to retrieve target from
+     * @param mob           The mob to save target to
+     * @param currentTarget The target
      */
     private static void saveCurrentTarget(Mob mob, @Nullable LivingEntity currentTarget) {
         UUID targetUUID = null;

@@ -4,8 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "aggroindicator.refmap.json",
   "mixins": [
-    "EntityMixin",
-    "ServerLevelMixin",
+    "BrainMixin",
     "LivingEntityAccess",
     "PrepareRamNearestTargetMixin",
     "RamTargetMixin"
