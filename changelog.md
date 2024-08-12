@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0-beta2+forge1.20.1]
+
+### Changed
+
+- Optimize memory-based target acquisition logic to use setter instead of on every tick
+
 ## [1.1.0-beta1+neoforge1.21]
 
 ### Added
