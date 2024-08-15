@@ -26,12 +26,12 @@ public class PrepareRamNearestTargetMixin {
     }
 
     @Inject(method = "tick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/PathfinderMob;J)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;broadcastEntityEvent(Lnet/minecraft/world/entity/Entity;B)V", ordinal = 0))
-    private <E extends PathfinderMob> void aggroindicator$goatLoseTarget(ServerLevel serverLevel, E pathAwareEntity, long l, CallbackInfo ci) {
+    private <E extends PathfinderMob> void aggroIndicator$goatLoseTarget(ServerLevel serverLevel, E pathAwareEntity, long l, CallbackInfo ci) {
         CommonEventHandler.processAggroChange(pathAwareEntity, null);
     }
 
     @Inject(method = "tick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/PathfinderMob;J)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;broadcastEntityEvent(Lnet/minecraft/world/entity/Entity;B)V", ordinal = 1))
-    private <E extends PathfinderMob> void aggroindicator$goatGainRamTarget(ServerLevel serverLevel, E pathAwareEntity, long l, CallbackInfo ci) {
+    private <E extends PathfinderMob> void aggroIndicator$goatGainRamTarget(ServerLevel serverLevel, E pathAwareEntity, long l, CallbackInfo ci) {
         CommonEventHandler.processAggroChange(
                 pathAwareEntity, this.ramCandidate.get().getTarget());
     }
