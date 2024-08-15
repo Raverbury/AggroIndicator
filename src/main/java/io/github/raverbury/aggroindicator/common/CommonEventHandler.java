@@ -1,27 +1,25 @@
 package io.github.raverbury.aggroindicator.common;
 
+import io.github.raverbury.aggroindicator.common.events.CustomLivingChangeTargetEvent;
 import io.github.raverbury.aggroindicator.common.network.packets.S2CMobChangeTargetPacket;
-import io.github.raverbury.aggroindicator.mixins.LivingEntityAccess;
+import io.github.raverbury.aggroindicator.common.mixins.LivingEntityAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.animal.goat.Goat;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -30,45 +28,77 @@ public class CommonEventHandler {
     private static final Map<UUID, UUID> aggroList = new HashMap<>();
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(CommonEventHandler::handleEntityPostTickEvent);
-        NeoForge.EVENT_BUS.addListener(CommonEventHandler::handleLivingDeathEvent);
-        NeoForge.EVENT_BUS.addListener(CommonEventHandler::handleWorldUnloadEvent);
+        NeoForge.EVENT_BUS.addListener(
+                CommonEventHandler::assignOwnerToBrainOnEntityJoinLevel);
+        NeoForge.EVENT_BUS.addListener(
+                CommonEventHandler::clearAggroForLoggedOutPlayer);
+        NeoForge.EVENT_BUS.addListener(
+                CommonEventHandler::handleLivingChangeTargetEvent);
+        NeoForge.EVENT_BUS.addListener(
+                CommonEventHandler::handleCustomLivingChangeTargetEvent);
+        NeoForge.EVENT_BUS.addListener(
+                CommonEventHandler::handleLivingDeathEvent);
+        NeoForge.EVENT_BUS.addListener(
+                CommonEventHandler::handleWorldUnloadEvent);
     }
 
+    public static void handleLivingChangeTargetEvent(LivingChangeTargetEvent event) {
+        if (!(event.getEntity() instanceof Mob) && event.getEntity().level()
+                .isClientSide()) {
+            return;
+        }
+        processAggroChange((Mob) event.getEntity(), event.getNewTarget());
+    }
+
+    public static void handleCustomLivingChangeTargetEvent(CustomLivingChangeTargetEvent event) {
+        if (!(event.getEntity() instanceof Mob) && event.getEntity().level()
+                .isClientSide()) {
+            return;
+        }
+        processAggroChange((Mob) event.getEntity(), event.getTarget());
+    }
+
+    /**
+     * Assign custom brainOwner field in BrainMixin with owner
+     *
+     * @param event
+     */
+    public static void assignOwnerToBrainOnEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        if (event.getEntity() instanceof LivingEntity livingEntity) {
+            ((BrainAccess) livingEntity.getBrain()).aggroindicator$setBrainOwner(
+                    livingEntity);
+        }
+    }
+
+    /**
+     * Clear aggro list of mobs targeting a player that just disconnects
+     *
+     * @param event
+     */
+    public static void clearAggroForLoggedOutPlayer(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity().level().isClientSide()) {
+            return;
+        }
+        for (UUID mobUuid : aggroList.keySet()) {
+            if (aggroList.get(mobUuid) == event.getEntity().getUUID()) {
+                aggroList.remove(mobUuid);
+            }
+        }
+    }
+
+    /**
+     * Clear the aggro list on server world unload
+     *
+     * @param event
+     */
     public static void handleWorldUnloadEvent(LevelEvent.Unload event) {
         if (event.getLevel().isClientSide()) {
             return;
         }
         aggroList.clear();
-    }
-
-    public static void handleEntityPostTickEvent(EntityTickEvent.Post event) {
-        if (event.getEntity() == null || event.getEntity().level()
-                .isClientSide()) {
-            return;
-        }
-        Entity entity = event.getEntity();
-        // edge case with goat, handled by ram related mixins
-        // so we exclude that here, ugly, but it works
-        if (entity instanceof Mob mob && !(entity instanceof Goat)) {
-            LivingEntity oldTarget = getOldTarget(mob);
-
-            // get current target the normal way
-            LivingEntity newTarget = mob.getTarget();
-            // if null then try reading from memory
-            if (newTarget == null) {
-                Optional<LivingEntity> optionalTarget = mob.getBrain()
-                        .getMemoryInternal(MemoryModuleType.ATTACK_TARGET);
-                if (optionalTarget != null && optionalTarget.isPresent()) {
-                    newTarget = optionalTarget.get();
-                }
-            }
-
-            // if target has changed, dispatch lct
-            if (newTarget != oldTarget) {
-                processAggroChange(mob, newTarget);
-            }
-        }
     }
 
     public static void handleLivingDeathEvent(LivingDeathEvent event) {
@@ -80,10 +110,7 @@ public class CommonEventHandler {
         processAggroChange((Mob) event.getEntity(), null);
     }
 
-    public static void processAggroChange(@Nonnull Mob mob, @Nullable LivingEntity newTarget) {
-        if (mob.level().isClientSide()) {
-            return;
-        }
+    private static void processAggroChange(@Nonnull Mob mob, @Nullable LivingEntity newTarget) {
         if (((LivingEntityAccess) mob).getDead()) {
             return;
         }
@@ -167,7 +194,7 @@ public class CommonEventHandler {
     /**
      * Write current target in aggro list
      *
-     * @param mob           The mob to retrieve target from
+     * @param mob           The mob to save target to
      * @param currentTarget The mob to retrieve target from
      */
     private static void saveCurrentTarget(Mob mob, @Nullable LivingEntity currentTarget) {

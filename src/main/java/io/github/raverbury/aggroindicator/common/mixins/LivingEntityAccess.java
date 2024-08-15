@@ -1,4 +1,4 @@
-package io.github.raverbury.aggroindicator.mixins;
+package io.github.raverbury.aggroindicator.common.mixins;
 
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
