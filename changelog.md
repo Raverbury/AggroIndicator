@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1]
+
+### Fixed
+
+- Server crash on player log out
+
 ## [1.1.0+forge1.21]
 
 ### Changed
