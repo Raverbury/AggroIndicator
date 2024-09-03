@@ -54,11 +54,7 @@ public class ServerEventHandler {
                 .isClientSide()) {
             return;
         }
-        for (UUID mobUuid : aggroList.keySet()) {
-            if (aggroList.get(mobUuid) == event.getEntity().getUUID()) {
-                aggroList.remove(mobUuid);
-            }
-        }
+        while (aggroList.values().remove(event.getEntity().getUUID()));
     }
 
     /**
