@@ -47,7 +47,7 @@ public class CommonEventHandler {
                 .isClientSide()) {
             return;
         }
-        processAggroChange((Mob) event.getEntity(), event.getNewTarget());
+        processAggroChange((Mob) event.getEntity(), event.getNewAboutToBeSetTarget());
     }
 
     public static void handleCustomLivingChangeTargetEvent(CustomLivingChangeTargetEvent event) {
