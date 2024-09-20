@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.2+neoforge1.21]
+
+### Fixed
+
+- Crash due to java.lang.NoSuchMethodError from using old, non-existent method name from Neoforge beta in newer Neoforge versions
+
+### Changed
+
+- Bumped Neoforge dependency to 21.0.167
+
 ## [1.1.1]
 
 ### Fixed
