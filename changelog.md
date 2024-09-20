@@ -8,7 +8,7 @@
 
 ### Changed
 
-- Bumped Neoforge dependency to 21.0.167
+- Bumped minimum Neoforge dependency to 21.0.167
 
 ## [1.1.1]
 
