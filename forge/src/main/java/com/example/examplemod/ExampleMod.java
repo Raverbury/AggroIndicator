@@ -1,5 +1,7 @@
 package com.example.examplemod;
 
+import io.github.raverbury.aggroindicator.CommonClass;
+import io.github.raverbury.aggroindicator.Constants;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod(Constants.MOD_ID)

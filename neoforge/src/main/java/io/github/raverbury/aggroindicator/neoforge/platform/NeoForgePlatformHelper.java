@@ -1,15 +1,15 @@
-package com.example.examplemod.platform;
+package io.github.raverbury.aggroindicator.neoforge.platform;
 
 import io.github.raverbury.aggroindicator.platform.services.IPlatformHelper;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLLoader;
 
-public class ForgePlatformHelper implements IPlatformHelper {
+public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public String getPlatformName() {
 
-        return "Forge";
+        return "NeoForge";
     }
 
     @Override
