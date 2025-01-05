@@ -93,7 +93,6 @@ public final class AlertRenderer {
                 (mob) -> true);
 
         for (Mob mob : mobs) {
-            Constants.LOG.info(mob.getName().getString());
             if (mob.hasEffect(
                     MobEffects.INVISIBILITY) || mob.isInvisible()) {
                 continue;

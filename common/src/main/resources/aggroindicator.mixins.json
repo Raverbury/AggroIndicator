@@ -4,7 +4,10 @@
   "package": "io.github.raverbury.aggroindicator.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_18",
-  "mixins": [],
+  "mixins": [
+    "PrepareRamNearestTargetMixin",
+    "RamTargetMixin"
+  ],
   "client": [
     "MixinLevelRenderer",
     "MixinMinecraft"

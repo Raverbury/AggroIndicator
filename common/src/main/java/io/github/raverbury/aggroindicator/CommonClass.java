@@ -2,7 +2,14 @@ package io.github.raverbury.aggroindicator;
 
 import io.github.raverbury.aggroindicator.platform.Services;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.Items;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 // This class is part of the common project meaning it is shared between all supported loaders. Code written here can only
 // import and access the vanilla codebase, libraries used by vanilla, and optionally third party libraries that provide
@@ -10,22 +17,104 @@ import net.minecraft.world.item.Items;
 // however it will be compatible with all supported mod loaders.
 public class CommonClass {
 
-    // The loader specific projects are able to import and use any code from the common project. This allows you to
-    // write the majority of your code here and load it from your loader specific projects. This example has some
-    // code that gets invoked by the entry point of the loader specific projects.
+    private static final Map<UUID, UUID> mobTargetPlayerMap = new HashMap<>();
+
     public static void init() {
+    }
 
-        Constants.LOG.info("Hello from Common init on {}! we are currently in a {} environment!", Services.PLATFORM.getPlatformName(), Services.PLATFORM.getEnvironmentName());
-        Constants.LOG.info("The ID for diamonds is {}", BuiltInRegistries.ITEM.getKey(Items.DIAMOND));
-
-        // It is common for all supported loaders to provide a similar feature that can not be used directly in the
-        // common code. A popular way to get around this is using Java's built-in service loader feature to create
-        // your own abstraction layer. You can learn more about this in our provided services class. In this example
-        // we have an interface in the common code and use a loader specific implementation to delegate our call to
-        // the platform specific approach.
-        if (Services.PLATFORM.isModLoaded("examplemod")) {
-
-            Constants.LOG.info("Hello to examplemod");
+    public static void livingChangeTarget(LivingEntity attacker,
+                                          LivingEntity newTarget) {
+        if (!(attacker instanceof Mob) || attacker.level().isClientSide) {
+            return;
         }
+
+        LivingEntity oldTarget = getOldTarget((Mob) attacker);
+
+        if (oldTarget == newTarget) {
+            return;
+        }
+
+        // send deaggro to old target
+        if (shouldSendDeaggroPacket(oldTarget)) {
+            Services.NETWORK.SendS2CMobTargetPlayerPacket(
+                    (ServerPlayer) oldTarget,
+                    attacker.getUUID(), false, false);
+        }
+
+        // send aggro to new target
+        if (shouldSendAggroPacket((Mob) attacker, newTarget)) {
+            Services.NETWORK.SendS2CMobTargetPlayerPacket(
+                    (ServerPlayer) newTarget,
+                    attacker.getUUID(), true, false);
+        }
+
+        // save current target for this mob
+        saveCurrentTarget((Mob) attacker, newTarget);
+    }
+
+    private static boolean shouldSendDeaggroPacket(LivingEntity oldTarget) {
+        return oldTarget instanceof ServerPlayer;
+    }
+
+    private static boolean shouldSendAggroPacket(Mob mob,
+                                                 LivingEntity newTarget) {
+        if (!(newTarget instanceof ServerPlayer)) {
+            return false;
+        }
+
+        String entityRegName =
+                BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
+
+        // TODO: read blacklist from config
+        // for (String blacklistedMobId : ) {
+        //     blacklistedMobId.replace("*", ".*");
+        //     Pattern pattern = Pattern.compile(blacklistedMobId,
+        //             Pattern.CASE_INSENSITIVE);
+        //     if (pattern.matcher(entityRegName).matches()) {
+        //         return false;
+        //     }
+        // }
+
+        return true;
+    }
+
+    /**
+     * Write current target of mob to aggro map
+     *
+     * @param attacker      The mob to save target to
+     * @param currentTarget The mob to retrieve target from
+     */
+    private static void saveCurrentTarget(Mob attacker,
+                                          LivingEntity currentTarget) {
+        UUID targetUUID = null;
+        if (currentTarget != null) {
+            targetUUID = currentTarget.getUUID();
+        }
+        if (targetUUID == null) {
+            mobTargetPlayerMap.remove(attacker.getUUID());
+        } else {
+            mobTargetPlayerMap.put(attacker.getUUID(), targetUUID);
+        }
+    }
+
+    /**
+     * Get old target of mob, stored in aggroList
+     *
+     * @param attacker The mob to retrieve target from
+     * @return The LivingEntity that is the target of the supplied mob
+     */
+    private static LivingEntity getOldTarget(Mob attacker) {
+        UUID oldTargetUUID = mobTargetPlayerMap.computeIfAbsent(
+                attacker.getUUID(),
+                uuid -> {
+                    return null;
+                });
+        if (oldTargetUUID == null) {
+            return null;
+        }
+        if (attacker.level() instanceof ServerLevel serverLevel) {
+            return (LivingEntity) serverLevel.getEntity(oldTargetUUID);
+        }
+        return null;
     }
 }
