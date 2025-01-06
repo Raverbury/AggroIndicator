@@ -17,6 +17,9 @@
     "entrypoints": {
         "main": [
             "io.github.raverbury.aggroindicator.fabric.AggroIndicatorFabric"
+        ],
+        "client": [
+            "io.github.raverbury.aggroindicator.fabric.client.AggroIndicatorFabricClient"
         ]
     },
     "mixins": [

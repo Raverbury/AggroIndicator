@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Optional;
 
 @Mixin(PrepareRamNearestTarget.class)
-public class PrepareRamNearestTargetMixin {
+public abstract class PrepareRamNearestTargetMixin {
 
     @Shadow
     private Optional<PrepareRamNearestTarget.RamCandidate> ramCandidate;

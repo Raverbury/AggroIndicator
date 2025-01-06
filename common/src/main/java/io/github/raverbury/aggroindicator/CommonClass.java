@@ -22,6 +22,14 @@ public class CommonClass {
     public static void init() {
     }
 
+    public static void clearMobTargetingThisPlayer(ServerPlayer serverPlayer) {
+        while (mobTargetPlayerMap.values().remove(serverPlayer.getUUID()));
+    }
+
+    public static void clearMobTargetPlayerMap() {
+        mobTargetPlayerMap.clear();
+    }
+
     public static void livingChangeTarget(LivingEntity attacker,
                                           LivingEntity newTarget) {
         if (!(attacker instanceof Mob) || attacker.level().isClientSide) {
@@ -36,14 +44,14 @@ public class CommonClass {
 
         // send deaggro to old target
         if (shouldSendDeaggroPacket(oldTarget)) {
-            Services.NETWORK.SendS2CMobTargetPlayerPacket(
+            Services.NETWORK.sendS2CMobTargetPlayerPacket(
                     (ServerPlayer) oldTarget,
                     attacker.getUUID(), false, false);
         }
 
         // send aggro to new target
         if (shouldSendAggroPacket((Mob) attacker, newTarget)) {
-            Services.NETWORK.SendS2CMobTargetPlayerPacket(
+            Services.NETWORK.sendS2CMobTargetPlayerPacket(
                     (ServerPlayer) newTarget,
                     attacker.getUUID(), true, false);
         }

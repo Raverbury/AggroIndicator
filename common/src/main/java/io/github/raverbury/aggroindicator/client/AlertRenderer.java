@@ -97,7 +97,7 @@ public final class AlertRenderer {
                     MobEffects.INVISIBILITY) || mob.isInvisible()) {
                 continue;
             }
-            if (true || entityUuidSet.contains(mob.getUUID())) {
+            if (entityUuidSet.contains(mob.getUUID())) {
                 renderedEntities.add(mob);
             }
         }

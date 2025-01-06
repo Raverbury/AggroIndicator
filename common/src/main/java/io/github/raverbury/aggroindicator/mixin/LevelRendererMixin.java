@@ -2,7 +2,6 @@ package io.github.raverbury.aggroindicator.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
-import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.client.AlertRenderer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -16,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
-public class MixinLevelRenderer {
+public abstract class LevelRendererMixin {
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target =
             "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;" +
                     "endBatch()V", ordinal = 0, shift = At.Shift.AFTER))

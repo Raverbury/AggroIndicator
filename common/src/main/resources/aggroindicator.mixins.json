@@ -5,12 +5,18 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_18",
   "mixins": [
+    "BrainMixin",
+    "LivingEntityMixin",
+    "MinecraftServerMixin",
+    "MobMixin",
+    "PersistentEntitySectionManagerMixin",
+    "PlayerListMixin",
     "PrepareRamNearestTargetMixin",
     "RamTargetMixin"
   ],
   "client": [
-    "MixinLevelRenderer",
-    "MixinMinecraft"
+    "LevelRendererMixin",
+    "MinecraftMixin"
   ],
   "server": [],
   "injectors": {
