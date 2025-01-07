@@ -1,7 +1,6 @@
 package io.github.raverbury.aggroindicator;
 
 import io.github.raverbury.aggroindicator.platform.Services;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -70,10 +69,9 @@ public class CommonClass {
             return false;
         }
 
-        String entityRegName =
-                BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
-
-        // TODO: read blacklist from config
+        // TODO: read blacklist from server config?
+        // String entityRegName =
+        //         BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
         // for (String blacklistedMobId : ) {
         //     blacklistedMobId.replace("*", ".*");
         //     Pattern pattern = Pattern.compile(blacklistedMobId,

@@ -9,6 +9,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public abstract class MinecraftServerMixin {
+
+    /**
+     * Mixin to recreate OnLevelUnload in Neo/Forge
+     * @param ci
+     */
     @Inject(method = "stopServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;close()V"))
     private void aggroindicator$clearMobTargetPlayerMapOnLevelUnload(CallbackInfo ci) {
         CommonClass.clearMobTargetPlayerMap();

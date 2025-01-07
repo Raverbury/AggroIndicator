@@ -8,6 +8,4 @@ public class Constants {
 	public static final String MOD_ID = "aggroindicator";
 	public static final String MOD_NAME = "Aggro Indicator";
 	public static final Logger LOG = LoggerFactory.getLogger(MOD_NAME);
-
-	public static final float DEFAULT_RANGE = 24f;
 }

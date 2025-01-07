@@ -1,12 +1,13 @@
 package io.github.raverbury.aggroindicator.neoforge;
 
-
 import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.client.AlertRenderer;
+import io.github.raverbury.aggroindicator.client.CommonClientClass;
 import io.github.raverbury.aggroindicator.network.packets.S2CMobChangeTargetPacket;
 import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -15,6 +16,10 @@ public class AggroIndicatorNeoForge {
 
     public AggroIndicatorNeoForge(IEventBus eventBus) {
         eventBus.addListener(this::registerPacketHandler);
+
+        if (FMLLoader.getDist().isClient()) {
+            CommonClientClass.init();
+        }
     }
 
     private void registerPacketHandler(final RegisterPayloadHandlersEvent event) {
@@ -35,10 +40,8 @@ public class AggroIndicatorNeoForge {
                             .exceptionally(e -> {
                                 // Handle exception
                                 context.disconnect(
-                                        Component.translatable(
-                                                "aggroindicator" +
-                                                        ".networking.failed",
-                                                e.getMessage()));
+                                        Component.literal("[Aggro Indicator] " +
+                                                "Packet handling failed: " + e.getMessage()));
                                 return null;
                             });
                 }

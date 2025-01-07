@@ -16,9 +16,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target =
-            "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;" +
-                    "endBatch()V", ordinal = 0, shift = At.Shift.AFTER))
+
+    /**
+     * Mixin to recreate LevelRenderEvent.AfterParticles in Neo/Forge
+     * @param deltaTracker
+     * @param renderBlockOutline
+     * @param camera
+     * @param gameRenderer
+     * @param lightTexture
+     * @param frustumMatrix
+     * @param projectionMatrix
+     * @param ci
+     * @param poseStack
+     */
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target =
+            "Lnet/minecraft/util/profiling/ProfilerFiller;popPush" +
+                    "(Ljava/lang/String;)V", args = "ldc=particles", shift =
+            At.Shift.AFTER))
     private void aggroindicator$preRenderParticle(DeltaTracker deltaTracker,
                                                   boolean renderBlockOutline,
                                                   Camera camera,

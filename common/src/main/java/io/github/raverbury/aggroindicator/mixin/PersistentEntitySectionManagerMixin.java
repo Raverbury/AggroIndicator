@@ -11,6 +11,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PersistentEntitySectionManager.class)
 public abstract class PersistentEntitySectionManagerMixin {
+
+    /**
+     * Mixin to recreate EntityJoinLevelEvent in Neo/Forge
+     * @param entity
+     * @param worldGenSpawned
+     * @param cir
+     * @param <T>
+     */
     @Inject(method = "addEntity", at = @At(value = "RETURN"))
     private <T extends EntityAccess> void aggroindicator$assignOwnerToBrainOnAddEntity(T entity,
                                                                                        boolean worldGenSpawned, CallbackInfoReturnable<Boolean> cir) {

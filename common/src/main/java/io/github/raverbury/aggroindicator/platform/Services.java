@@ -1,6 +1,7 @@
 package io.github.raverbury.aggroindicator.platform;
 
 import io.github.raverbury.aggroindicator.Constants;
+import io.github.raverbury.aggroindicator.platform.services.IConfigHelper;
 import io.github.raverbury.aggroindicator.platform.services.INetworkHandler;
 import io.github.raverbury.aggroindicator.platform.services.IPlatformHelper;
 
@@ -16,6 +17,7 @@ public class Services {
     // mod is loaded.
     public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
     public static final INetworkHandler NETWORK = load(INetworkHandler.class);
+    public static final IConfigHelper CONFIG_HELPER = load(IConfigHelper.class);
 
     // This code is used to load a service for the current environment. Your implementation of the service must be defined
     // manually by including a text file in META-INF/services named with the fully qualified class name of the service.

@@ -2,6 +2,7 @@ package io.github.raverbury.aggroindicator.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import io.github.raverbury.aggroindicator.ClientConfig;
 import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.util.MathHelper;
 import net.minecraft.client.Camera;
@@ -9,10 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -26,9 +27,8 @@ import java.util.UUID;
 
 public final class AlertRenderer {
 
-    private static final Set<LivingEntity> renderedEntities = new HashSet<>();
     private static final Set<UUID> entityUuidSet = new HashSet<>();
-    private static ResourceLocation aggroIcon = getConfiguredAggroIcon();
+    private static ResourceLocation aggroIcon = getConfiguredAggroIcon(0);
 
     private AlertRenderer() {
     }
@@ -70,53 +70,59 @@ public final class AlertRenderer {
      * @param camera
      */
     public static void renderAlertIcon(float partialTick, PoseStack matrix, Camera camera) {
+        // early stop
+        ClientConfig clientConfig = ClientConfig.cachedOrDefault();
+        if (!clientConfig.renderAlertIcon) {
+            return;
+        }
+
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         ClientLevel clientLevel = Minecraft.getInstance().level;
 
-        // early stop
-        if (camera == null || clientLevel == null ||
+        if (entityUuidSet.isEmpty() || camera == null || clientLevel == null ||
                 localPlayer == null || localPlayer.hasEffect(
                 MobEffects.BLINDNESS) || localPlayer.hasEffect(
                 MobEffects.DARKNESS)) {
             return;
         }
-        // if (entityUuidSet.isEmpty() || camera == null || clientLevel == null ||
-        //         localPlayer == null || localPlayer.hasEffect(
-        //         MobEffects.BLINDNESS) || localPlayer.hasEffect(
-        //         MobEffects.DARKNESS)) {
-        //     return;
-        // }
 
-        // grabs all nearby mobs
-        List<Mob> mobs = clientLevel.getEntitiesOfClass(Mob.class,
-                localPlayer.getBoundingBox().inflate(Constants.DEFAULT_RANGE),
-                (mob) -> true);
-
-        for (Mob mob : mobs) {
-            if (mob.hasEffect(
-                    MobEffects.INVISIBILITY) || mob.isInvisible()) {
-                continue;
-            }
-            if (entityUuidSet.contains(mob.getUUID())) {
-                renderedEntities.add(mob);
-            }
-        }
-
+        // prep draw
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA,
                 GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+        aggroIcon = getConfiguredAggroIcon(clientConfig.alertIconStyle);
 
-        for (LivingEntity entity : renderedEntities) {
+        // grabs all nearby mobs
+        List<Mob> nearbyMobs = clientLevel.getEntitiesOfClass(Mob.class,
+                localPlayer.getBoundingBox()
+                        .inflate(clientConfig.getClampedRenderRange()),
+                (mob) -> true);
 
+        // check aggro + blacklist then draw
+        HashSet<String> blacklistedMobs =
+                clientConfig.getBlacklistLookupTable();
+        for (Mob mob : nearbyMobs) {
+            if (!entityUuidSet.contains(mob.getUUID())) {
+                continue;
+            }
+            String entityRegistryName = BuiltInRegistries.ENTITY_TYPE.getKey(
+                    mob.getType()).toString();
+            if (blacklistedMobs.contains(entityRegistryName)) {
+                continue;
+            }
+            if (mob.hasEffect(
+                    MobEffects.INVISIBILITY) || mob.isInvisible()) {
+                continue;
+            }
             float scaleToGui = 0.025f;
-            boolean sneaking = entity.isCrouching();
-            float height = entity.getBbHeight() + 0.6F - (sneaking ? 0.25F : 0.0F);
+            boolean sneaking = mob.isCrouching();
+            float height = mob.getBbHeight() + 0.6F - (sneaking ? 0.25F : 0.0F);
 
-            double x = Mth.lerp(partialTick, entity.xo, entity.getX());
-            double y = Mth.lerp(partialTick, entity.yo, entity.getY());
-            double z = Mth.lerp(partialTick, entity.zo, entity.getZ());
+            double x = Mth.lerp(partialTick, mob.xo, mob.getX());
+            double y = Mth.lerp(partialTick, mob.yo, mob.getY());
+            double z = Mth.lerp(partialTick, mob.zo, mob.getZ());
 
             Vec3 camPos = camera.getPosition();
             double camX = camPos.x();
@@ -128,36 +134,28 @@ public final class AlertRenderer {
             Vector3f YP = new Vector3f(0.0f, 1.0f, 0.0f);
             matrix.mulPose(MathHelper.rotationDegrees(YP, -camera.getYRot()));
             matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
-            // if (ClientConfig.scaleWithMobSize) {
-            //     float size = (float) entity.getBoundingBox().getSize();
-            //     size *= (size > 2) ? 0.9f : 1.0f;
-            //     matrix.scale(size, size, size);
-            // }
-            // _render(matrix, ClientConfig.xOffset, -(7f + ClientConfig.yOffset),
-            //         (float) ClientConfig.alertIconSize);
-            _render(matrix, 0, -(7f + 10), (float) 30);
+            if (clientConfig.scaleWithMobSize) {
+                float size = (float) mob.getBoundingBox().getSize();
+                size *= (size > 2) ? 0.9f : 1.0f;
+                matrix.scale(size, size, size);
+            }
+            _render(matrix, clientConfig.getClampedXOffset(),
+                    -(7f + clientConfig.getClampedYOffset()),
+                    (float) clientConfig.getClampedAlertIconSize());
 
             matrix.popPose();
         }
-
-        renderedEntities.clear();
     }
 
-    public static void reloadAggroIcon() {
-        aggroIcon = getConfiguredAggroIcon();
-    }
-
-    private static ResourceLocation getConfiguredAggroIcon() {
-        return ResourceLocation.parse(
-                Constants.MOD_ID + ":textures" + "/alert_icon_classic.png");
-        // return switch (ClientConfig.clientAggroIconStyle) {
-        //     case MGS -> ResourceLocation.parse(
-        //             AggroIndicator.MODID + ":textures/alert_icon_mgs.png");
-        //     case BLOCK_BENCH -> ResourceLocation.parse(
-        //             AggroIndicator.MODID + ":textures/alert_icon_block_bench.png");
-        //     default -> ResourceLocation.parse(
-        //             AggroIndicator.MODID + ":textures/alert_icon_classic.png");
-        // };
+    private static ResourceLocation getConfiguredAggroIcon(int style) {
+        return switch (style) {
+            case 1 -> ResourceLocation.parse(
+                    Constants.MOD_ID + ":textures/alert_icon_1.png");
+            case 2 -> ResourceLocation.parse(
+                    Constants.MOD_ID + ":textures/alert_icon_2.png");
+            default -> ResourceLocation.parse(
+                    Constants.MOD_ID + ":textures/alert_icon_0.png");
+        };
     }
 
     private static void _render(PoseStack matrix, double x, double y, float size) {

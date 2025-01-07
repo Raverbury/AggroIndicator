@@ -1,6 +1,5 @@
 package io.github.raverbury.aggroindicator.fabric.platform;
 
-import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.network.packets.S2CMobChangeTargetPacket;
 import io.github.raverbury.aggroindicator.platform.services.INetworkHandler;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
