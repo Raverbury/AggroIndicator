@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.0.0-rc.1]
+
+### Changed
+
+- Move entire project to jaredlll08's multiloader architecture, should lower updating/maintenance cost in the future
+- NeoForge's built-in config with a custom universal config that also works on Fabric, but no config screen integrations of any kind yet for both loaders
+
+### Added
+
+- As a side effect of switching to multiloader architecture, cross modloader compatibility, i.e. NeoForge client should work with Fabric server and vice versa
+
+### Removed
+
+- Server config
+
 ## [1.1.2+neoforge1.21]
 
 ### Fixed
