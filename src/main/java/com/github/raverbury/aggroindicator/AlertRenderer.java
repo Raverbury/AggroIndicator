@@ -119,6 +119,9 @@ public class AlertRenderer {
     }
 
     private static void _render(PoseStack matrix, double x, double y, float size) {
+        float[] rgbValues = ClientConfig.Cached.COLORS;
+        RenderSystem.setShaderColor(rgbValues[0], rgbValues[1], rgbValues[2],
+                1f);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, aggroIcon);
         RenderSystem.enableBlend();
@@ -139,6 +142,7 @@ public class AlertRenderer {
         buffer.vertex(m4f, (float) (halfWidth + x), (float) y, 0.25f).uv(1f, 0f)
                 .endVertex();
         tesselator.end();
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
 }

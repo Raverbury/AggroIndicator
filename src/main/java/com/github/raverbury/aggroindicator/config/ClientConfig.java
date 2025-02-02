@@ -4,6 +4,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.common.Mod;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class ClientConfig {
     public static ForgeConfigSpec.BooleanValue SCALE_WITH_MOB_SIZE;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> CLIENT_MOB_BLACKLIST;
     public static ForgeConfigSpec.EnumValue<AggroIconStyle> CLIENT_AGGRO_ICON_STYLE;
+    public static ForgeConfigSpec.ConfigValue<String> ALERT_COLOR_HEX;
 
     static {
         CLIENT_BUILDER.push("Rendering");
@@ -64,6 +66,12 @@ public class ClientConfig {
                 .translation("config.client.clientAggroIconStyle")
                 .defineEnum("clientAggroIconStyle", AggroIconStyle.CLASSIC);
 
+        ALERT_COLOR_HEX = CLIENT_BUILDER.comment(
+                "The color of the alert icon")
+                .translation("config.client.clientAlertColorHex")
+                .define("alertColorHex", "0xFF6666"
+        );
+
         CLIENT_BUILDER.pop();
 
         INSTANCE = CLIENT_BUILDER.build();
@@ -75,14 +83,15 @@ public class ClientConfig {
 
     @Mod.EventBusSubscriber(value = Dist.CLIENT)
     public static class Cached {
-        public static boolean RENDER_ALERT_ICON;
-        public static int RENDER_RANGE;
-        public static double X_OFFSET;
-        public static double Y_OFFSET;
-        public static double ALERT_ICON_SIZE;
-        public static boolean SCALE_WITH_MOB_SIZE;
-        public static List<? extends String> CLIENT_MOB_BLACKLIST;
-        public static AggroIconStyle CLIENT_AGGRO_ICON_STYLE;
+        public static boolean RENDER_ALERT_ICON = true;
+        public static int RENDER_RANGE = 32;
+        public static double X_OFFSET = 0;
+        public static double Y_OFFSET = 5;
+        public static double ALERT_ICON_SIZE = 30;
+        public static boolean SCALE_WITH_MOB_SIZE = false;
+        public static List<? extends String> CLIENT_MOB_BLACKLIST = new ArrayList<>();
+        public static AggroIconStyle CLIENT_AGGRO_ICON_STYLE = AggroIconStyle.CLASSIC;
+        public static float[] COLORS = {1f, 1f, 1f};
 
         public static void reload() {
             RENDER_ALERT_ICON = ClientConfig.RENDER_ALERT_ICON.get();
@@ -93,6 +102,10 @@ public class ClientConfig {
             SCALE_WITH_MOB_SIZE = ClientConfig.SCALE_WITH_MOB_SIZE.get();
             CLIENT_MOB_BLACKLIST = ClientConfig.CLIENT_MOB_BLACKLIST.get();
             CLIENT_AGGRO_ICON_STYLE = ClientConfig.CLIENT_AGGRO_ICON_STYLE.get();
+            Color color = Color.decode(ClientConfig.ALERT_COLOR_HEX.get());
+            COLORS[0] = color.getRed() / 255f;
+            COLORS[1] = color.getGreen() / 255f;
+            COLORS[2] = color.getBlue() / 255f;
         }
     }
 }
