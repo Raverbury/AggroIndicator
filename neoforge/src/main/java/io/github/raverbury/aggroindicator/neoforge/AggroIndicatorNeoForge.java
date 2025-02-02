@@ -31,7 +31,7 @@ public class AggroIndicatorNeoForge {
                     context.enqueueWork(() -> {
                                 if (payload.targetThisPlayer()) {
                                     AlertRenderer.addAggroingMob(
-                                            payload.mobUuid());
+                                            payload.mobUuid(), payload.isAboutToAttack());
                                 } else {
                                     AlertRenderer.removeAggroingMob(
                                             payload.mobUuid());

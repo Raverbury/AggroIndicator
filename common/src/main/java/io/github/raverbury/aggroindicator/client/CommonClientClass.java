@@ -4,6 +4,6 @@ import io.github.raverbury.aggroindicator.ClientConfig;
 
 public class CommonClientClass {
     public static void init() {
-        ClientConfig.loadOrDefault();
+        ClientConfig.save(ClientConfig.loadOrDefault());
     }
 }

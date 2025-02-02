@@ -3,8 +3,10 @@ package io.github.raverbury.aggroindicator;
 import io.github.raverbury.aggroindicator.platform.Services;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class CommonClass {
     }
 
     public static void clearMobTargetingThisPlayer(ServerPlayer serverPlayer) {
-        while (mobTargetPlayerMap.values().remove(serverPlayer.getUUID()));
+        while (mobTargetPlayerMap.values().remove(serverPlayer.getUUID())) ;
     }
 
     public static void clearMobTargetPlayerMap() {
@@ -57,6 +59,19 @@ public class CommonClass {
 
         // save current target for this mob
         saveCurrentTarget((Mob) attacker, newTarget);
+    }
+
+    public static void livingAboutToAttack(LivingEntity attacker,
+                                           boolean aboutToAttack) {
+        if (mobTargetPlayerMap.containsKey(attacker.getUUID())) {
+            Entity entity =
+                    ((ServerLevel) attacker.level()).getEntity(
+                            mobTargetPlayerMap.get(attacker.getUUID()));
+            if (entity instanceof Player player)
+                Services.NETWORK.sendS2CMobTargetPlayerPacket(
+                        (ServerPlayer) player,
+                        attacker.getUUID(), true, aboutToAttack);
+        }
     }
 
     private static boolean shouldSendDeaggroPacket(LivingEntity oldTarget) {

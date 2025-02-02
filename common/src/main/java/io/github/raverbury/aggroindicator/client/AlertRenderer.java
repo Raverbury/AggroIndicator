@@ -12,22 +12,22 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class AlertRenderer {
 
-    private static final Set<UUID> entityUuidSet = new HashSet<>();
+    private static final Map<UUID, Boolean> entityUuidSet = new HashMap<>();
     private static ResourceLocation aggroIcon = getConfiguredAggroIcon(0);
 
     private AlertRenderer() {
@@ -39,8 +39,8 @@ public final class AlertRenderer {
      *
      * @param mobUuid
      */
-    public static void addAggroingMob(UUID mobUuid) {
-        entityUuidSet.add(mobUuid);
+    public static void addAggroingMob(UUID mobUuid, boolean isAboutToAttack) {
+        entityUuidSet.put(mobUuid, isAboutToAttack);
     }
 
     /**
@@ -104,7 +104,7 @@ public final class AlertRenderer {
         HashSet<String> blacklistedMobs =
                 clientConfig.getBlacklistLookupTable();
         for (Mob mob : nearbyMobs) {
-            if (!entityUuidSet.contains(mob.getUUID())) {
+            if (!entityUuidSet.containsKey(mob.getUUID())) {
                 continue;
             }
             String entityRegistryName = BuiltInRegistries.ENTITY_TYPE.getKey(
@@ -139,12 +139,35 @@ public final class AlertRenderer {
                 size *= (size > 2) ? 0.9f : 1.0f;
                 matrix.scale(size, size, size);
             }
+            float[] colors = clientConfig.getColors();
+            // if (mob.hasCustomName() && "jeb_".equals(
+            //         mob.getName().getString())) {
+            //     int k = mob.tickCount / 25 + mob.getId();
+            //     int l = DyeColor.values().length;
+            //     int i1 = k % l;
+            //     int j1 = (k + 1) % l;
+            //     float f = ((float) (mob.tickCount % 25) + mob.getId()) / 25.0F;
+            //     int k1 = Sheep.getColor(DyeColor.byId(i1));
+            //     int l1 = Sheep.getColor(DyeColor.byId(j1));
+            //     int color = FastColor.ARGB32.lerp(f, k1, l1);
+            //     float[] jebColors = new float[3];
+            //     jebColors[0] = FastColor.ARGB32.red(color) / 255f;
+            //     jebColors[1] = FastColor.ARGB32.green(color) / 255f;
+            //     jebColors[2] = FastColor.ARGB32.blue(color) / 255f;
+            //     _render(matrix, clientConfig.getClampedXOffset(),
+            //             -(7f + clientConfig.getClampedYOffset()),
+            //             clientConfig.getClampedAlertIconSize(),
+            //             entityUuidSet.get(mob.getUUID()), jebColors);
+            // }
             _render(matrix, clientConfig.getClampedXOffset(),
                     -(7f + clientConfig.getClampedYOffset()),
-                    (float) clientConfig.getClampedAlertIconSize());
+                    clientConfig.getClampedAlertIconSize(),
+                    entityUuidSet.get(mob.getUUID()), colors);
+
 
             matrix.popPose();
         }
+        RenderSystem.disableBlend();
     }
 
     private static ResourceLocation getConfiguredAggroIcon(int style) {
@@ -158,7 +181,16 @@ public final class AlertRenderer {
         };
     }
 
-    private static void _render(PoseStack matrix, double x, double y, float size) {
+    private static void _render(PoseStack matrix, double x, double y,
+                                float size, boolean isAboutToAttack,
+                                float[] colors) {
+        RenderSystem.setShaderColor(colors[0], colors[1], colors[2], 1f);
+        // if (isAboutToAttack) {
+        //     RenderSystem.setShaderColor(colors[3], colors[4], colors[5], 1f);
+        // }
+        // else {
+        //     RenderSystem.setShaderColor(colors[0], colors[1], colors[2], 1f);
+        // }
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, aggroIcon);
         RenderSystem.enableBlend();
@@ -180,5 +212,6 @@ public final class AlertRenderer {
                 .setUv(1f, 0f);
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 }

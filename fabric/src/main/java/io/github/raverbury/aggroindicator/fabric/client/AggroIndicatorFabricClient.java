@@ -16,7 +16,7 @@ public class AggroIndicatorFabricClient implements ClientModInitializer {
                     context.client().execute(() -> {
                         if (payload.targetThisPlayer()) {
                             AlertRenderer.addAggroingMob(
-                                    payload.mobUuid());
+                                    payload.mobUuid(), payload.isAboutToAttack());
                         } else {
                             AlertRenderer.removeAggroingMob(
                                     payload.mobUuid());

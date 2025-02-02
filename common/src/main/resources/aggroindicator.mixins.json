@@ -15,6 +15,7 @@
     "RamTargetMixin"
   ],
   "client": [
+    "KeyboardHandlerMixin",
     "LevelRendererMixin",
     "MinecraftMixin"
   ],
@@ -23,4 +24,3 @@
     "defaultRequire": 1
   }
 }
-
