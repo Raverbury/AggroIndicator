@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.1]
+
+### Added
+
+- Config to customize alert icon color
+- Pausing with ESC reloads client config
+
+## [1.1.2+forge1.20.1]
+
+### Added
+
+- Config to customize alert icon color
+
 ## [2.0.0-rc.1]
 
 ### Changed
