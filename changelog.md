@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2+fabric1.20.1]
+
+### Added
+
+- Backported from 2.0.1
+
 ## [2.0.1]
 
 ### Added
