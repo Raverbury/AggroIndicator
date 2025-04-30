@@ -19,6 +19,7 @@ public class ClientConfig {
     public static ForgeConfigSpec.DoubleValue ALERT_ICON_SIZE;
     public static ForgeConfigSpec.BooleanValue SCALE_WITH_MOB_SIZE;
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> CLIENT_MOB_BLACKLIST;
+    public static ForgeConfigSpec.BooleanValue TREAT_BLACKLIST_AS_WHITELIST;
     public static ForgeConfigSpec.EnumValue<AggroIconStyle> CLIENT_AGGRO_ICON_STYLE;
     public static ForgeConfigSpec.ConfigValue<String> ALERT_COLOR_HEX;
 
@@ -61,6 +62,11 @@ public class ClientConfig {
                 .defineList("clientMobBlacklist", new ArrayList<String>(),
                         registry_name -> true);
 
+        TREAT_BLACKLIST_AS_WHITELIST = CLIENT_BUILDER.comment(
+                "Draw alert icons only for the blacklisted mobs instead"
+        ).translation("config.client.treatBlacklistAsWhitelist")
+                .define("treatBlacklistAsWhitelist", false);
+
         CLIENT_AGGRO_ICON_STYLE = CLIENT_BUILDER.comment(
                         "The texture of the aggro icon")
                 .translation("config.client.clientAggroIconStyle")
@@ -90,6 +96,7 @@ public class ClientConfig {
         public static double ALERT_ICON_SIZE = 30;
         public static boolean SCALE_WITH_MOB_SIZE = false;
         public static List<? extends String> CLIENT_MOB_BLACKLIST = new ArrayList<>();
+        public static boolean TREAT_BLACKLIST_AS_WHITELIST = false;
         public static AggroIconStyle CLIENT_AGGRO_ICON_STYLE = AggroIconStyle.CLASSIC;
         public static float[] COLORS = {1f, 1f, 1f};
 
@@ -101,6 +108,8 @@ public class ClientConfig {
             ALERT_ICON_SIZE = ClientConfig.ALERT_ICON_SIZE.get();
             SCALE_WITH_MOB_SIZE = ClientConfig.SCALE_WITH_MOB_SIZE.get();
             CLIENT_MOB_BLACKLIST = ClientConfig.CLIENT_MOB_BLACKLIST.get();
+            TREAT_BLACKLIST_AS_WHITELIST =
+                    ClientConfig.TREAT_BLACKLIST_AS_WHITELIST.get();
             CLIENT_AGGRO_ICON_STYLE = ClientConfig.CLIENT_AGGRO_ICON_STYLE.get();
             Color color = Color.decode(ClientConfig.ALERT_COLOR_HEX.get());
             COLORS[0] = color.getRed() / 255f;

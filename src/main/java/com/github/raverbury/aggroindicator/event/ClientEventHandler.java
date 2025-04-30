@@ -19,11 +19,15 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ClientEventHandler {
+
+    private static final HashMap<String, Boolean> regexListCache =
+            new HashMap<>();
 
     public static void register() {
         MinecraftForge.EVENT_BUS.addListener(
@@ -38,6 +42,7 @@ public class ClientEventHandler {
         if (event.getConfig().getSpec() == ClientConfig.INSTANCE) {
             ClientConfig.Cached.reload();
             AlertRenderer.reloadAggroIcon();
+            regexListCache.clear();
         }
     }
 
@@ -99,16 +104,23 @@ public class ClientEventHandler {
         String entityRegistryName = Objects.requireNonNull(
                         ForgeRegistries.ENTITY_TYPES.getKey(clientEntity.getType()))
                 .toString();
-        boolean IS_BLACKLISTED = false;
-        for (String item : ClientConfig.Cached.CLIENT_MOB_BLACKLIST) {
-            item = item.replace("*", ".*");
-            Pattern pattern = Pattern.compile(item, Pattern.CASE_INSENSITIVE);
-            if (pattern.matcher(entityRegistryName).matches()) {
-                IS_BLACKLISTED = true;
-                break;
+        boolean isWhitelist = ClientConfig.Cached.TREAT_BLACKLIST_AS_WHITELIST;
+        boolean inList = false;
+        if (regexListCache.containsKey(entityRegistryName)) {
+            inList = regexListCache.get(entityRegistryName);
+        } else {
+            for (String item : ClientConfig.Cached.CLIENT_MOB_BLACKLIST) {
+                item = item.replace("*", ".*");
+                Pattern pattern = Pattern.compile(item,
+                        Pattern.CASE_INSENSITIVE);
+                if (pattern.matcher(entityRegistryName).matches()) {
+                    inList = true;
+                    break;
+                }
             }
+            regexListCache.put(entityRegistryName, inList);
         }
-        if (IS_BLACKLISTED) {
+        if ((isWhitelist && !inList) || (!isWhitelist && inList)) {
             // AggroIndicator.LOGGER.info("Mob is blacklisted");
             return false;
         }
