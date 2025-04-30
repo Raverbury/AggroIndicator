@@ -24,6 +24,7 @@ public class ClientConfig {
     public boolean renderAlertIcon = true;
     public boolean scaleWithMobSize = false;
     public List<String> mobBlacklist = List.of("minecraft:bat");
+    public boolean treatBlacklistAsWhitelist = false;
     public int alertIconStyle = 0;
     private float renderRange = 24;
     private float xOffset = 0;

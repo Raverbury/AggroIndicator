@@ -106,7 +106,9 @@ public final class AlertRenderer {
             }
             String entityRegistryName = Registries.ENTITY_TYPE.getKey(
                     mob.getType()).get().getValue().toString();
-            if (blacklistedMobs.contains(entityRegistryName)) {
+            boolean isWhitelist = clientConfig.treatBlacklistAsWhitelist;
+            boolean inList = blacklistedMobs.contains(entityRegistryName);
+            if ((isWhitelist && !inList) || (!isWhitelist && inList)) {
                 continue;
             }
             if (mob.hasStatusEffect(
