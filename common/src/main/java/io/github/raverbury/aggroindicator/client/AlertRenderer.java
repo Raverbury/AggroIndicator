@@ -12,12 +12,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.Sheep;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -109,7 +106,9 @@ public final class AlertRenderer {
             }
             String entityRegistryName = BuiltInRegistries.ENTITY_TYPE.getKey(
                     mob.getType()).toString();
-            if (blacklistedMobs.contains(entityRegistryName)) {
+            boolean treatAsWhitelist = clientConfig.treatBlacklistAsWhitelist;
+            boolean inList = blacklistedMobs.contains(entityRegistryName);
+            if ((treatAsWhitelist && !inList) || (!treatAsWhitelist && inList)) {
                 continue;
             }
             if (mob.hasEffect(
