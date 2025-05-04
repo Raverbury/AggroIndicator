@@ -1,5 +1,23 @@
 # Changelog
 
+## [neoforge/fabric-1.21.1-2.0.2]
+
+### Added
+
+- Config option to treat blacklist as whitelist.
+
+## [1.1.3+forge/fabric1.20.1]
+
+### Added
+
+- Config option to treat blacklist as whitelist.
+
+## [1.13+forge/fabric1.20.1]
+
+### Added
+
+- Config option to treat blacklist as whitelist.
+
 ## [1.1.2+fabric1.20.1]
 
 ### Added
