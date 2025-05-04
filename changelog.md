@@ -1,6 +1,6 @@
 # Changelog
 
-## [neoforge/fabric-1.21.1-2.0.2]
+## [2.0.2+neoforge/fabric1.21.1]
 
 ### Added
 
