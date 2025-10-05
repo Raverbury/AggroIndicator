@@ -2,6 +2,7 @@ package io.github.raverbury.aggroindicator;
 
 import com.google.gson.GsonBuilder;
 import io.github.raverbury.aggroindicator.platform.Services;
+
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class ClientConfig {
     private float yOffset = 10;
     private float alertIconSize = 30;
     private String alertColorHex = "0xFF6666";
+    private int hideAlertAfterTicks = 0;
 
     public static ClientConfig cachedOrDefault() {
         if (CACHED_CONFIG != null) {
@@ -101,5 +103,9 @@ public class ClientConfig {
 
     public float[] getColors() {
         return cachedColors;
+    }
+
+    public int getHideTimer() {
+        return Math.max(0, hideAlertAfterTicks);
     }
 }

@@ -2,12 +2,15 @@ package io.github.raverbury.aggroindicator.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.client.AlertRenderer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.Entity;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,6 +22,7 @@ public abstract class LevelRendererMixin {
 
     /**
      * Mixin to recreate LevelRenderEvent.AfterParticles in Neo/Forge
+     *
      * @param deltaTracker
      * @param renderBlockOutline
      * @param camera
@@ -44,5 +48,14 @@ public abstract class LevelRendererMixin {
                                                   @Local PoseStack poseStack) {
         AlertRenderer.renderAlertIcon(deltaTracker.getRealtimeDeltaTicks(),
                 poseStack, camera);
+    }
+
+    @Inject(
+            method = "renderEntity",
+            at = @At(value = "RETURN")
+    )
+    private void aggroindicator$hookIntoRenderEntityMethod(Entity entity, double camX, double camY, double camZ, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, CallbackInfo ci) {
+        //        Constants.LOG.debug(String.valueOf(entity.level().getGameTime()));
+        AlertRenderer.increaseSeenFrameCount(entity.getUUID(), entity.level().getGameTime());
     }
 }

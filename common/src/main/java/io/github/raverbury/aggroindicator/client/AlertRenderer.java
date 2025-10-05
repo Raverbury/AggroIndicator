@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
@@ -24,7 +25,7 @@ import java.util.*;
 
 public final class AlertRenderer {
 
-    private static final Map<UUID, Boolean> entityUuidSet = new HashMap<>();
+    private static final Map<UUID, Tuple<Integer, Long>> entityUuidSet = new HashMap<>();
     private static ResourceLocation aggroIcon = getConfiguredAggroIcon(0);
 
     private AlertRenderer() {
@@ -37,7 +38,8 @@ public final class AlertRenderer {
      * @param mobUuid
      */
     public static void addAggroingMob(UUID mobUuid, boolean isAboutToAttack) {
-        entityUuidSet.put(mobUuid, isAboutToAttack);
+        entityUuidSet.putIfAbsent(mobUuid, new Tuple<>(0, 0L));
+        //        entityUuidSet.put(mobUuid, isAboutToAttack);
     }
 
     /**
@@ -56,6 +58,19 @@ public final class AlertRenderer {
      */
     public static void clearAggroingMobs() {
         entityUuidSet.clear();
+    }
+
+    public static void increaseSeenFrameCount(UUID mobUuid, long currentTick) {
+        if (!entityUuidSet.containsKey(mobUuid)) {
+            return;
+        }
+        Tuple<Integer, Long> oldTuple = entityUuidSet.get((mobUuid));
+        if (oldTuple.getB() >= currentTick) {
+            return;
+        }
+        oldTuple.setA(oldTuple.getA() + 1);
+        oldTuple.setB(currentTick);
+        entityUuidSet.replace(mobUuid, oldTuple);
     }
 
     /**
@@ -102,6 +117,10 @@ public final class AlertRenderer {
                 clientConfig.getBlacklistLookupTable();
         for (Mob mob : nearbyMobs) {
             if (!entityUuidSet.containsKey(mob.getUUID())) {
+                continue;
+            }
+            int hideTimer = clientConfig.getHideTimer();
+            if (hideTimer > 0 && entityUuidSet.get(mob.getUUID()).getA() > hideTimer) {
                 continue;
             }
             String entityRegistryName = BuiltInRegistries.ENTITY_TYPE.getKey(
@@ -161,7 +180,7 @@ public final class AlertRenderer {
             _render(matrix, clientConfig.getClampedXOffset(),
                     -(7f + clientConfig.getClampedYOffset()),
                     clientConfig.getClampedAlertIconSize(),
-                    entityUuidSet.get(mob.getUUID()), colors);
+                    false, colors);
 
 
             matrix.popPose();
