@@ -31,6 +31,7 @@ public class ClientConfig {
     private float yOffset = 10;
     private float alertIconSize = 30;
     private String alertColorHex = "0xFF6666";
+    private int hideAlertAfterTicks = 0;
 
     public static ClientConfig cachedOrDefault() {
         if (CACHED_CONFIG != null) {
@@ -73,7 +74,8 @@ public class ClientConfig {
             new GsonBuilder().setPrettyPrinting().create().toJson(
                     clientConfig, writer);
         } catch (IOException e) {
-            AggroIndicator.LOGGER.error("[Aggro Indicator] Saving config failed: {}",
+            AggroIndicator.LOGGER.error(
+                    "[Aggro Indicator] Saving config failed: {}",
                     e.getMessage(), e);
         }
     }
@@ -104,6 +106,10 @@ public class ClientConfig {
 
     public float[] getColors() {
         return cachedColors;
+    }
+
+    public int getHideTimer() {
+        return Math.max(0, hideAlertAfterTicks);
     }
 }
 

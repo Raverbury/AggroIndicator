@@ -14,6 +14,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -23,7 +24,8 @@ import java.util.*;
 
 public final class AlertRenderer {
 
-    private static final Map<UUID, Boolean> entityUuidSet = new HashMap<>();
+    private static final Map<UUID, Pair<Integer, Long>> entityUuidSet =
+            new HashMap<>();
     private static Identifier aggroIcon = getConfiguredAggroIcon(0);
 
     private AlertRenderer() {
@@ -36,7 +38,7 @@ public final class AlertRenderer {
      * @param mobUuid
      */
     public static void addAggroingMob(UUID mobUuid, boolean isAboutToAttack) {
-        entityUuidSet.put(mobUuid, isAboutToAttack);
+        entityUuidSet.put(mobUuid, new Pair<>(0, 0L));
     }
 
     /**
@@ -47,6 +49,19 @@ public final class AlertRenderer {
      */
     public static void removeAggroingMob(UUID mobUuid) {
         entityUuidSet.remove(mobUuid);
+    }
+
+    public static void increaseSeenFrameCount(UUID mobUuid, long currentTick) {
+        if (!entityUuidSet.containsKey(mobUuid)) {
+            return;
+        }
+        Pair<Integer, Long> oldTuple = entityUuidSet.get((mobUuid));
+        if (oldTuple.getRight() >= currentTick) {
+            return;
+        }
+        oldTuple.setLeft(oldTuple.getLeft() + 1);
+        oldTuple.setRight(currentTick);
+        entityUuidSet.replace(mobUuid, oldTuple);
     }
 
     /**
@@ -92,7 +107,8 @@ public final class AlertRenderer {
         aggroIcon = getConfiguredAggroIcon(clientConfig.alertIconStyle);
 
         // grabs all nearby mobs
-        List<MobEntity> nearbyMobs = clientLevel.getEntitiesByClass(MobEntity.class,
+        List<MobEntity> nearbyMobs = clientLevel.getEntitiesByClass(
+                MobEntity.class,
                 localPlayer.getBoundingBox()
                         .expand(clientConfig.getClampedRenderRange()),
                 (mob) -> true);
@@ -102,6 +118,11 @@ public final class AlertRenderer {
                 clientConfig.getBlacklistLookupTable();
         for (MobEntity mob : nearbyMobs) {
             if (!entityUuidSet.containsKey(mob.getUuid())) {
+                continue;
+            }
+            int hideTimer = clientConfig.getHideTimer();
+            if (hideTimer > 0 && entityUuidSet.get(mob.getUuid())
+                    .getLeft() > hideTimer) {
                 continue;
             }
             String entityRegistryName = Registries.ENTITY_TYPE.getKey(
@@ -117,8 +138,9 @@ public final class AlertRenderer {
             }
             float scaleToGui = 0.025f;
             boolean sneaking = mob.isSneaking();
-            float height = (float) (mob.getBoundingBox().getYLength() + 0.6F - (sneaking ? 0.25F :
-                                0.0F));
+            float height = (float) (mob.getBoundingBox()
+                    .getYLength() + 0.6F - (sneaking ? 0.25F :
+                    0.0F));
 
             double x = net.minecraft.util.math.MathHelper.lerp(partialTick,
                     mob.prevX, mob.getX());
@@ -138,7 +160,8 @@ public final class AlertRenderer {
             matrix.multiply(MathHelper.rotationDegrees(YP, -camera.getYaw()));
             matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
             if (clientConfig.scaleWithMobSize) {
-                float size = (float) mob.getBoundingBox().getAverageSideLength();
+                float size = (float) mob.getBoundingBox()
+                        .getAverageSideLength();
                 size *= (size > 2) ? 0.9f : 1.0f;
                 matrix.scale(size, size, size);
             }
@@ -147,7 +170,7 @@ public final class AlertRenderer {
             _render(matrix, clientConfig.getClampedXOffset(),
                     -(7f + clientConfig.getClampedYOffset()),
                     clientConfig.getClampedAlertIconSize(),
-                    entityUuidSet.get(mob.getUuid()), colors);
+                    false, colors);
 
             matrix.pop();
         }
@@ -180,17 +203,24 @@ public final class AlertRenderer {
         BufferBuilder buffer = tessellator.getBuffer();
 
         VertexFormat format = new VertexFormat(
-                ImmutableMap.<String, VertexFormatElement>builder().put("Position",
-                                new VertexFormatElement(0, VertexFormatElement.ComponentType.FLOAT,
+                ImmutableMap.<String, VertexFormatElement>builder()
+                        .put("Position",
+                                new VertexFormatElement(0,
+                                        VertexFormatElement.ComponentType.FLOAT,
                                         VertexFormatElement.Type.POSITION, 3))
-                        .put("UV0", new VertexFormatElement(0, VertexFormatElement.ComponentType.FLOAT,
+                        .put("UV0", new VertexFormatElement(0,
+                                VertexFormatElement.ComponentType.FLOAT,
                                 VertexFormatElement.Type.UV, 2)).build());
 
         buffer.begin(VertexFormat.DrawMode.QUADS, format);
-        buffer.vertex(m4f, (float) (-halfWidth + x), (float) y, 0.25f).texture(0f, 0f).next();
-        buffer.vertex(m4f, (float) (-halfWidth + x), (float) (size + y), 0.25f).texture(0f, 1f).next();
-        buffer.vertex(m4f, (float) (halfWidth + x), (float) (size + y), 0.25f).texture(1f, 1f).next();
-        buffer.vertex(m4f, (float) (halfWidth + x), (float) y, 0.25f).texture(1f, 0f).next();
+        buffer.vertex(m4f, (float) (-halfWidth + x), (float) y, 0.25f)
+                .texture(0f, 0f).next();
+        buffer.vertex(m4f, (float) (-halfWidth + x), (float) (size + y), 0.25f)
+                .texture(0f, 1f).next();
+        buffer.vertex(m4f, (float) (halfWidth + x), (float) (size + y), 0.25f)
+                .texture(1f, 1f).next();
+        buffer.vertex(m4f, (float) (halfWidth + x), (float) y, 0.25f)
+                .texture(1f, 0f).next();
         tessellator.draw();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
