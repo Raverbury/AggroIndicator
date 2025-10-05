@@ -10,6 +10,7 @@
     "RamTargetMixin"
   ],
   "client": [
+    "LevelRendererMixin"
   ],
   "minVersion": "0.8"
 }

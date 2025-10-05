@@ -22,6 +22,7 @@ public class ClientConfig {
     public static ForgeConfigSpec.BooleanValue TREAT_BLACKLIST_AS_WHITELIST;
     public static ForgeConfigSpec.EnumValue<AggroIconStyle> CLIENT_AGGRO_ICON_STYLE;
     public static ForgeConfigSpec.ConfigValue<String> ALERT_COLOR_HEX;
+    public static ForgeConfigSpec.IntValue HIDE_ALERT_AFTER;
 
     static {
         CLIENT_BUILDER.push("Rendering");
@@ -63,8 +64,8 @@ public class ClientConfig {
                         registry_name -> true);
 
         TREAT_BLACKLIST_AS_WHITELIST = CLIENT_BUILDER.comment(
-                "Draw alert icons only for the blacklisted mobs instead"
-        ).translation("config.client.treatBlacklistAsWhitelist")
+                        "Draw alert icons only for the blacklisted mobs instead"
+                ).translation("config.client.treatBlacklistAsWhitelist")
                 .define("treatBlacklistAsWhitelist", false);
 
         CLIENT_AGGRO_ICON_STYLE = CLIENT_BUILDER.comment(
@@ -73,10 +74,14 @@ public class ClientConfig {
                 .defineEnum("clientAggroIconStyle", AggroIconStyle.CLASSIC);
 
         ALERT_COLOR_HEX = CLIENT_BUILDER.comment(
-                "The color of the alert icon")
+                        "The color of the alert icon")
                 .translation("config.client.clientAlertColorHex")
                 .define("alertColorHex", "0xFF6666"
-        );
+                );
+
+        HIDE_ALERT_AFTER = CLIENT_BUILDER.comment(
+                "Hide alert icon after X ticks, set to <= 0 to disable"
+        ).translation("config.client.clientHideAlertAfterTicks").defineInRange("hideAlertAfterTicks", -1, -2, Integer.MAX_VALUE);
 
         CLIENT_BUILDER.pop();
 
@@ -99,6 +104,7 @@ public class ClientConfig {
         public static boolean TREAT_BLACKLIST_AS_WHITELIST = false;
         public static AggroIconStyle CLIENT_AGGRO_ICON_STYLE = AggroIconStyle.CLASSIC;
         public static float[] COLORS = {1f, 1f, 1f};
+        public static int hideAfterTicks = -1;
 
         public static void reload() {
             RENDER_ALERT_ICON = ClientConfig.RENDER_ALERT_ICON.get();
@@ -115,6 +121,7 @@ public class ClientConfig {
             COLORS[0] = color.getRed() / 255f;
             COLORS[1] = color.getGreen() / 255f;
             COLORS[2] = color.getBlue() / 255f;
+            hideAfterTicks = ClientConfig.HIDE_ALERT_AFTER.get();
         }
     }
 }

@@ -9,6 +9,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -20,7 +22,7 @@ import java.util.*;
 public class AlertRenderer {
 
     private static final List<LivingEntity> renderedEntities = new ArrayList<>();
-    private static final Set<UUID> entityUuidSet = new HashSet<>();
+    private static final HashMap<UUID, Tuple<Integer, Long>> entityUuidSet = new HashMap<>();
     private static ResourceLocation aggroIcon = getConfiguredAggroIcon();
 
     public static void addEntity(LivingEntity entity) {
@@ -31,7 +33,9 @@ public class AlertRenderer {
     }
 
     public static void addAggroingMob(UUID mobUuid) {
-        entityUuidSet.add(mobUuid);
+        if (!entityUuidSet.containsKey(mobUuid)) {
+            entityUuidSet.put(mobUuid, new Tuple<>(0, 0L));
+        }
     }
 
     public static void removeAggroingMob(UUID mobUuid) {
@@ -43,7 +47,29 @@ public class AlertRenderer {
     }
 
     public static boolean shouldDrawThisUuid(UUID uuid) {
-        return entityUuidSet.contains(uuid);
+        Tuple<Integer, Long> tuple = entityUuidSet.getOrDefault(uuid, null);
+        if (tuple == null) {
+            return false;
+        }
+        int hideAfterTicks = ClientConfig.Cached.hideAfterTicks;
+        if (hideAfterTicks <= 0) {
+            return true;
+        }
+        return tuple.getA() < ClientConfig.Cached.hideAfterTicks;
+    }
+
+    public static void tickSeenEnemy(Entity entity) {
+        UUID uuid = entity.getUUID();
+        if (entityUuidSet.containsKey(uuid)) {
+            Tuple<Integer, Long> tuple = entityUuidSet.get(uuid);
+            // potentially wrong, but eh prob not
+            // should be checking against the entity's level instead
+            long currentTick = entity.level().getGameTime();
+            if (tuple.getB() < currentTick) {
+                tuple.setB(currentTick);
+                tuple.setA(Math.min(tuple.getA() + 1, ClientConfig.Cached.hideAfterTicks));
+            }
+        }
     }
 
     public static void renderAlertIcon(float partialTick, PoseStack matrix, Camera camera) {
@@ -74,9 +100,9 @@ public class AlertRenderer {
             boolean sneaking = entity.isCrouching();
             float height = entity.getBbHeight() + 0.6F - (sneaking ? 0.25F : 0.0F);
 
-            double x = Mth.lerp((double) partialTick, entity.xo, entity.getX());
-            double y = Mth.lerp((double) partialTick, entity.yo, entity.getY());
-            double z = Mth.lerp((double) partialTick, entity.zo, entity.getZ());
+            double x = Mth.lerp(partialTick, entity.xo, entity.getX());
+            double y = Mth.lerp(partialTick, entity.yo, entity.getY());
+            double z = Mth.lerp(partialTick, entity.zo, entity.getZ());
 
             Vec3 camPos = camera.getPosition();
             double camX = camPos.x();

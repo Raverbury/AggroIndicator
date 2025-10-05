@@ -8,5 +8,6 @@
   "config.client.clientMobBlacklist": "Client does not render alert icons above these mobs",
   "config.client.treatBlacklistAsWhitelist": "Client only renders alert icons above these mobs",
   "config.client.clientAggroIconStyle": "Controls the texture used to draw aggro icon",
-  "config.server.clientMobBlacklist": "Server does not check target acquisition for these mobs"
+  "config.server.clientMobBlacklist": "Server does not check target acquisition for these mobs",
+  "config.server.hideAlertAfterTicks": "Hide alert icon for mobs that have been visible for X ticks, set to <= 0 to disable this feature"
 }
