@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.1.0+neoforge/fabric1.21.4]
+
+### Added
+
+- Port to 1.21.4.
+
+### Changed
+
+- Fixed a possible crash due to null Tuple when tracking seen time.
+
+## [2.0.3+neoforge/fabric1.21.1]
+
+### Added
+
+- Ability and config to hide aggro icon after some time.
+
+## [1.1.4+forge/fabric1.20.1]
+
+### Added
+
+- Ability and config to hide aggro icon after some time.
+
 ## [2.0.2+neoforge/fabric1.21.1]
 
 ### Added
@@ -12,17 +34,11 @@
 
 - Config option to treat blacklist as whitelist.
 
-## [1.13+forge/fabric1.20.1]
-
-### Added
-
-- Config option to treat blacklist as whitelist.
-
 ## [1.1.2+fabric1.20.1]
 
 ### Added
 
-- Backported from 2.0.1
+- Features backported from 2.0.1.
 
 ## [2.0.1]
 
