@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
 
-    @WrapOperation(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;ZZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client" +
+    @WrapOperation(method = "disconnect(Lnet/minecraft/client/gui/screens/Screen;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client" +
             "/renderer/GameRenderer;resetData()V"))
     private void aggroindicator$clientPlayerLogout(GameRenderer instance, Operation<Void> original) {
         original.call(instance);

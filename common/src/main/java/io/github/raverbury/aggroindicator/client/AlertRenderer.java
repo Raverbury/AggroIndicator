@@ -9,10 +9,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
@@ -27,7 +27,7 @@ import java.util.*;
 public final class AlertRenderer {
 
     private static final Map<UUID, Tuple<Integer, Long>> entityUuidSet = new HashMap<>();
-    private static Identifier aggroIconIdentifier = getConfiguredAggroIcon(0);
+    private static ResourceLocation aggroIconIdentifier = getConfiguredAggroIcon(0);
 
     private AlertRenderer() {
     }
@@ -86,7 +86,8 @@ public final class AlertRenderer {
     /**
      * Draws aggro icon for this entity, if applicable.
      */
-    public static void renderAlertIconForEntity(Entity entity, float partialTick, PoseStack matrix, MultiBufferSource multiBufferSource, Camera camera) {
+    public static void renderAlertIconForEntity(Entity entity, float partialTick, PoseStack matrix,
+            MultiBufferSource multiBufferSource, Camera camera) {
         // early stop
         ClientConfig clientConfig = ClientConfig.cachedOrDefault();
         if (!clientConfig.renderAlertIcon) {
@@ -96,14 +97,13 @@ public final class AlertRenderer {
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         ClientLevel clientLevel = Minecraft.getInstance().level;
 
-        boolean SHOULD_RETURN_EARLY_1 =
-                entityUuidSet.isEmpty() ||
-                        !(entity instanceof Mob) ||
-                        camera == null ||
-                        clientLevel == null ||
-                        localPlayer == null ||
-                        localPlayer.hasEffect(MobEffects.BLINDNESS) ||
-                        localPlayer.hasEffect(MobEffects.DARKNESS);
+        boolean SHOULD_RETURN_EARLY_1 = entityUuidSet.isEmpty() ||
+                !(entity instanceof Mob) ||
+                camera == null ||
+                clientLevel == null ||
+                localPlayer == null ||
+                localPlayer.hasEffect(MobEffects.BLINDNESS) ||
+                localPlayer.hasEffect(MobEffects.DARKNESS);
 
         if (SHOULD_RETURN_EARLY_1) {
             return;
@@ -117,8 +117,7 @@ public final class AlertRenderer {
         // this sometimes happens on dedicated server during testing...
         // how?
         // TODO: investigate this
-        if (tuple == null)
-        {
+        if (tuple == null) {
             tuple = new Tuple<>(0, 0L);
         }
         if (hideTimer > 0 && tuple.getA() > hideTimer) {
@@ -137,8 +136,7 @@ public final class AlertRenderer {
         }
 
         // check blacklist, stop if present, or for whitelist, stop if not present
-        HashSet<String> blacklistedMobs =
-                clientConfig.getBlacklistLookupTable();
+        HashSet<String> blacklistedMobs = clientConfig.getBlacklistLookupTable();
         String entityRegistryName = BuiltInRegistries.ENTITY_TYPE.getKey(
                 entity.getType()).toString();
         boolean treatAsWhitelist = clientConfig.treatBlacklistAsWhitelist;
@@ -164,7 +162,7 @@ public final class AlertRenderer {
         matrix.pushPose();
         matrix.translate(x - camX, (y + height) - camY, z - camZ);
         Vector3f YP = new Vector3f(0.0f, 1.0f, 0.0f);
-        matrix.mulPose(MathHelper.rotationDegrees(YP, -camera.yRot()));
+        matrix.mulPose(MathHelper.rotationDegrees(YP, -camera.yaw()));
         matrix.scale(-scaleToGui, -scaleToGui, scaleToGui);
         if (clientConfig.scaleWithMobSize) {
             float size = (float) entity.getBoundingBox().getSize();
@@ -173,7 +171,7 @@ public final class AlertRenderer {
         }
         float[] rgb = clientConfig.getAlertColorRGB();
 
-        VertexConsumer vertexConsumer = multiBufferSource.getBuffer(RenderTypes.text(aggroIconIdentifier));
+        VertexConsumer vertexConsumer = multiBufferSource.getBuffer(RenderType.text(aggroIconIdentifier));
 
         _render(vertexConsumer, matrix, clientConfig.getClampedXOffset(),
                 -(7f + clientConfig.getClampedYOffset()),
@@ -183,20 +181,20 @@ public final class AlertRenderer {
         matrix.popPose();
     }
 
-    private static Identifier getConfiguredAggroIcon(int style) {
+    private static ResourceLocation getConfiguredAggroIcon(int style) {
         return switch (style) {
-            case 1 -> Identifier.parse(
+            case 1 -> ResourceLocation.parse(
                     Constants.MOD_ID + ":textures/alert_icon_1.png");
-            case 2 -> Identifier.parse(
+            case 2 -> ResourceLocation.parse(
                     Constants.MOD_ID + ":textures/alert_icon_2.png");
-            default -> Identifier.parse(
+            default -> ResourceLocation.parse(
                     Constants.MOD_ID + ":textures/alert_icon_0.png");
         };
     }
 
     private static void _render(VertexConsumer vertexConsumer, PoseStack poseStack, double x, double y,
-                                float size,
-                                float[] rgb) {
+            float size,
+            float[] rgb) {
         Matrix4f m4f = poseStack.last().pose();
         PoseStack.Pose last = poseStack.last();
         final int LIGHT = 0xF000F0;
@@ -207,12 +205,16 @@ public final class AlertRenderer {
         final float a = 1f;
 
         vertexConsumer.addVertex(m4f, (float) (-halfWidth + x), (float) y, 0.25f)
-                .setUv(0f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                .setUv(0f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY)
+                .setNormal(last, 0.0F, 0.0F, 0.0F);
         vertexConsumer.addVertex(m4f, (float) (-halfWidth + x), (float) (size + y),
-                0.25f).setUv(0f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                0.25f).setUv(0f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY)
+                .setNormal(last, 0.0F, 0.0F, 0.0F);
         vertexConsumer.addVertex(m4f, (float) (halfWidth + x), (float) (size + y),
-                0.25f).setUv(1f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                0.25f).setUv(1f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY)
+                .setNormal(last, 0.0F, 0.0F, 0.0F);
         vertexConsumer.addVertex(m4f, (float) (halfWidth + x), (float) y, 0.25f)
-                .setUv(1f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                .setUv(1f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY)
+                .setNormal(last, 0.0F, 0.0F, 0.0F);
     }
 }
