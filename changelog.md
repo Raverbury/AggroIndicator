@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0+neoforge/fabric1.21.10]
+
+### Added
+
+- Backport to 1.21.10 from 1.21.11. Thanks [mcm](https://github.com/mcm).
+
+## [2.1.0+neoforge/fabric1.21.11]
+
+### Added
+
+- Port to 1.21.11.
+
 ## [2.1.0+neoforge/fabric1.21.4]
 
 ### Added
