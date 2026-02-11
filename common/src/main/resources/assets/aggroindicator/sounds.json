@@ -1,0 +1,9 @@
+{
+  "aggro_sound": {
+    "sounds": [
+      {
+        "name": "aggroindicator:aggro_sound_0"
+      }
+    ]
+  }
+}

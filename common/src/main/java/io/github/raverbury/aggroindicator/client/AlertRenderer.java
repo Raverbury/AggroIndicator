@@ -3,6 +3,7 @@ package io.github.raverbury.aggroindicator.client;
 import com.mojang.blaze3d.vertex.*;
 import io.github.raverbury.aggroindicator.ClientConfig;
 import io.github.raverbury.aggroindicator.Constants;
+import io.github.raverbury.aggroindicator.modules.AggroSoundPlayer;
 import io.github.raverbury.aggroindicator.util.MathHelper;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -39,7 +40,12 @@ public final class AlertRenderer {
      * @param mobUuid
      */
     public static void addAggroingMob(UUID mobUuid, boolean isAboutToAttack) {
-        entityUuidSet.putIfAbsent(mobUuid, new Tuple<>(0, 0L));
+        Tuple<Integer, Long> a = entityUuidSet.putIfAbsent(mobUuid, new Tuple<>(0, 0L));
+
+        if (a == null)
+        {
+            AggroSoundPlayer.playClientSoundForPlayer(Minecraft.getInstance().player);
+        }
     }
 
     /**
@@ -113,13 +119,13 @@ public final class AlertRenderer {
 
         // check timer, stop if seen tick exceed configured hideTimer
         int hideTimer = clientConfig.getHideTimer();
+        if (!entityUuidSet.containsKey(entity.getUUID())) {
+            return;
+        }
         Tuple<Integer, Long> tuple = entityUuidSet.get(entity.getUUID());
-        // this sometimes happens on dedicated server during testing...
-        // how?
-        // TODO: investigate this
         if (tuple == null)
         {
-            tuple = new Tuple<>(0, 0L);
+//            tuple = new Tuple<>(0, 0L);
         }
         if (hideTimer > 0 && tuple.getA() > hideTimer) {
             return;
