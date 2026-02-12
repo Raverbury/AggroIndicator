@@ -123,9 +123,12 @@ public final class AlertRenderer {
             return;
         }
         Tuple<Integer, Long> tuple = entityUuidSet.get(entity.getUUID());
+        // this sometimes happens on dedicated server during testing...
+        // how?
+        // TODO: investigate this
         if (tuple == null)
         {
-//            tuple = new Tuple<>(0, 0L);
+           tuple = new Tuple<>(0, 0L);
         }
         if (hideTimer > 0 && tuple.getA() > hideTimer) {
             return;
