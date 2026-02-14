@@ -1,13 +1,15 @@
 {
-  "config.client.renderAlertIcon": "Alert icons will not be displayed if set to false",
+  "config.client.renderAlertIcon": "Alert icons will only be displayed if set to true",
   "config.client.renderRange": "Only mobs within range will display alert icons",
   "config.client.xOffset": "Adjusts the position of alert icons horizontally",
   "config.client.yOffset": "Adjusts the position of alert icons vertically",
   "config.client.alertIconSize": "Adjusts the size of alert icons",
   "config.client.scaleWithMobSize": "Scales alert icons with mob's size",
   "config.client.clientMobBlacklist": "Client does not render alert icons above these mobs",
-  "config.client.treatBlacklistAsWhitelist": "Client only renders alert icons above these mobs",
+  "config.client.treatBlacklistAsWhitelist": "Treats the mob blacklist as whitelist if set to true",
   "config.client.clientAggroIconStyle": "Controls the texture used to draw aggro icon",
   "config.server.clientMobBlacklist": "Server does not check target acquisition for these mobs",
-  "config.server.hideAlertAfterTicks": "Hide alert icon for mobs that have been visible for X ticks, set to <= 0 to disable this feature"
+  "config.server.clientHideAlertAfterTicks": "Hide alert icon for mobs that have been visible for X ticks, set to <= 0 to disable this feature",
+  "config.client.clientAlertColorHex": "Controls the color of the alert icon, should be in hexadecimal format",
+  "config.server.clientPlayAlertSound": "Plays an alert sound when mobs target the player if set to true"
 }

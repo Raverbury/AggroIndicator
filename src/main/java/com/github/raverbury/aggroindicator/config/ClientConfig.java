@@ -23,6 +23,7 @@ public class ClientConfig {
     public static ForgeConfigSpec.EnumValue<AggroIconStyle> CLIENT_AGGRO_ICON_STYLE;
     public static ForgeConfigSpec.ConfigValue<String> ALERT_COLOR_HEX;
     public static ForgeConfigSpec.IntValue HIDE_ALERT_AFTER;
+    public static ForgeConfigSpec.BooleanValue PLAY_ALERT_SOUND;
 
     static {
         CLIENT_BUILDER.push("Rendering");
@@ -83,6 +84,11 @@ public class ClientConfig {
                 "Hide alert icon after X ticks, set to <= 0 to disable"
         ).translation("config.client.clientHideAlertAfterTicks").defineInRange("hideAlertAfterTicks", -1, -2, Integer.MAX_VALUE);
 
+        PLAY_ALERT_SOUND = CLIENT_BUILDER.comment(
+                "Play an alert sound when mobs target the player"
+        ).translation("config.client.clientPlayAlertSound").define(
+                "playAlertSound", false);
+
         CLIENT_BUILDER.pop();
 
         INSTANCE = CLIENT_BUILDER.build();
@@ -105,6 +111,7 @@ public class ClientConfig {
         public static AggroIconStyle CLIENT_AGGRO_ICON_STYLE = AggroIconStyle.CLASSIC;
         public static float[] COLORS = {1f, 1f, 1f};
         public static int hideAfterTicks = -1;
+        public static boolean playAlertSound;
 
         public static void reload() {
             RENDER_ALERT_ICON = ClientConfig.RENDER_ALERT_ICON.get();
@@ -122,6 +129,7 @@ public class ClientConfig {
             COLORS[1] = color.getGreen() / 255f;
             COLORS[2] = color.getBlue() / 255f;
             hideAfterTicks = ClientConfig.HIDE_ALERT_AFTER.get();
+            playAlertSound = ClientConfig.PLAY_ALERT_SOUND.get();
         }
     }
 }

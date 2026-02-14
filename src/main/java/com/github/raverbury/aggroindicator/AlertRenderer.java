@@ -1,6 +1,7 @@
 package com.github.raverbury.aggroindicator;
 
 import com.github.raverbury.aggroindicator.config.ClientConfig;
+import com.github.raverbury.aggroindicator.modules.AggroSoundPlayer;
 import com.github.raverbury.aggroindicator.util.MathHelper;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -17,7 +18,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 public class AlertRenderer {
 
@@ -35,6 +39,10 @@ public class AlertRenderer {
     public static void addAggroingMob(UUID mobUuid) {
         if (!entityUuidSet.containsKey(mobUuid)) {
             entityUuidSet.put(mobUuid, new Tuple<>(0, 0L));
+            if (ClientConfig.Cached.playAlertSound) {
+                AggroSoundPlayer.playClientSoundForPlayer(
+                        Minecraft.getInstance().player);
+            }
         }
     }
 
@@ -67,7 +75,8 @@ public class AlertRenderer {
             long currentTick = entity.level().getGameTime();
             if (tuple.getB() < currentTick) {
                 tuple.setB(currentTick);
-                tuple.setA(Math.min(tuple.getA() + 1, ClientConfig.Cached.hideAfterTicks));
+                tuple.setA(Math.min(tuple.getA() + 1,
+                        ClientConfig.Cached.hideAfterTicks));
             }
         }
     }

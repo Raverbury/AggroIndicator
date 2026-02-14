@@ -4,6 +4,7 @@ import com.github.raverbury.aggroindicator.config.ClientConfig;
 import com.github.raverbury.aggroindicator.config.ServerConfig;
 import com.github.raverbury.aggroindicator.event.ClientEventHandler;
 import com.github.raverbury.aggroindicator.event.ServerEventHandler;
+import com.github.raverbury.aggroindicator.modules.AggroSoundPlayer;
 import com.github.raverbury.aggroindicator.network.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -48,6 +49,7 @@ public class AggroIndicator {
                 () -> ClientEventHandler::register);
         ServerEventHandler.register();
         NetworkHandler.register();
+        AggroSoundPlayer.init();
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
