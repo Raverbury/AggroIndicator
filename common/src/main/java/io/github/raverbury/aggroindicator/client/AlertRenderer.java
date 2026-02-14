@@ -44,7 +44,10 @@ public final class AlertRenderer {
 
         if (a == null)
         {
-            AggroSoundPlayer.playClientSoundForPlayer(Minecraft.getInstance().player);
+            if (ClientConfig.cachedOrDefault().shouldPlayAlertSound())
+            {
+                AggroSoundPlayer.playClientSoundForPlayer(Minecraft.getInstance().player);
+            }
         }
     }
 
