@@ -1,5 +1,6 @@
 package io.github.raverbury.aggroindicator.neoforge;
 
+import io.github.raverbury.aggroindicator.CommonClass;
 import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.client.AlertRenderer;
 import io.github.raverbury.aggroindicator.client.CommonClientClass;
@@ -14,12 +15,20 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 @Mod(Constants.MOD_ID)
 public class AggroIndicatorNeoForge {
 
+    private static IEventBus modEventBus;
+
     public AggroIndicatorNeoForge(IEventBus eventBus) {
+        modEventBus = eventBus;
         eventBus.addListener(this::registerPacketHandler);
 
+        CommonClass.init();
         if (FMLLoader.getDist().isClient()) {
             CommonClientClass.init();
         }
+    }
+
+    public static IEventBus getModEventBus() {
+        return modEventBus;
     }
 
     private void registerPacketHandler(final RegisterPayloadHandlersEvent event) {

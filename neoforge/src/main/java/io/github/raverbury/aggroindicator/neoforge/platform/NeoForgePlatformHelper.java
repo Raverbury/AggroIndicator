@@ -1,8 +1,16 @@
 package io.github.raverbury.aggroindicator.neoforge.platform;
 
+import io.github.raverbury.aggroindicator.Constants;
+import io.github.raverbury.aggroindicator.neoforge.AggroIndicatorNeoForge;
 import io.github.raverbury.aggroindicator.platform.services.IPlatformHelper;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 public class NeoForgePlatformHelper implements IPlatformHelper {
 
@@ -20,7 +28,16 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public boolean isDevelopmentEnvironment() {
-
         return !FMLLoader.isProduction();
+    }
+
+    @Override
+    public <V, T extends V> Supplier<T> register(Registry<V> registryType,
+                                                 ResourceLocation identifier,
+                                                 Supplier<T> valueSupplier) {
+        DeferredRegister<V> dr = DeferredRegister.create(registryType, Constants.MOD_ID);
+        DeferredHolder<V, T> res = dr.register(identifier.getPath(), valueSupplier);
+        dr.register(AggroIndicatorNeoForge.getModEventBus());
+        return res;
     }
 }

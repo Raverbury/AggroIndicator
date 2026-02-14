@@ -1,5 +1,10 @@
 package io.github.raverbury.aggroindicator.platform.services;
 
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.function.Supplier;
+
 public interface IPlatformHelper {
 
     /**
@@ -33,4 +38,8 @@ public interface IPlatformHelper {
 
         return isDevelopmentEnvironment() ? "development" : "production";
     }
+
+    public <V, T extends V> Supplier<T> register(Registry<V> registryType,
+                                                 ResourceLocation identifier,
+                                                 Supplier<T> valueSupplier);
 }
