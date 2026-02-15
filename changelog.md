@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.1.1+neoforge/fabric1.21.11]
+
+## Added
+
+- An alert sound that plays when player is targeted (config is off by default).
+
+## [2.1.1+neoforge/fabric1.21.10]
+
+## Added
+
+- An alert sound that plays when player is targeted (config is off by default).
+
+## [2.0.4+neoforge/fabric1.21.1]
+
+## Added
+
+- An alert sound that plays when player is targeted (config is off by default).
+
+## Fixed
+
+- Possible null Tuple when tracking seen time, backported from 1.21.11.
+
+## [1.1.5+forge/fabric1.20.1]
+
+## Added
+
+- An alert sound that plays when player is targeted (config is off by default).
+
+## Fixed
+
+- Some broken config translation keys for Forge.
+- Possible null Tuple when tracking seen time, backported from 1.21.11.
+
 ## [2.1.0+neoforge/fabric1.21.10]
 
 ### Added
@@ -18,9 +51,9 @@
 
 - Port to 1.21.4.
 
-### Changed
+### Fixed
 
-- Fixed a possible crash due to null Tuple when tracking seen time.
+- Possible crash due to null Tuple when tracking seen time.
 
 ## [2.0.3+neoforge/fabric1.21.1]
 
