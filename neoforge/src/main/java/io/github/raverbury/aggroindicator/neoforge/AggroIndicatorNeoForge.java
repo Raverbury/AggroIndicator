@@ -15,13 +15,20 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 @Mod(Constants.MOD_ID)
 public class AggroIndicatorNeoForge {
 
+    private static IEventBus modEventBus;
+
     public AggroIndicatorNeoForge(IEventBus eventBus) {
+        modEventBus = eventBus;
         eventBus.addListener(this::registerPacketHandler);
 
         CommonClass.init();
         if (FMLLoader.getCurrent().getDist().isClient()) {
             CommonClientClass.init();
         }
+    }
+
+    public static IEventBus getModEventBus() {
+        return modEventBus;
     }
 
     private void registerPacketHandler(final RegisterPayloadHandlersEvent event) {
