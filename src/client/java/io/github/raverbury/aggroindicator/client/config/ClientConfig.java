@@ -32,6 +32,7 @@ public class ClientConfig {
     private float alertIconSize = 30;
     private String alertColorHex = "0xFF6666";
     private int hideAlertAfterTicks = 0;
+    private boolean playAlertSound = false;
 
     public static ClientConfig cachedOrDefault() {
         if (CACHED_CONFIG != null) {
@@ -110,6 +111,10 @@ public class ClientConfig {
 
     public int getHideTimer() {
         return Math.max(0, hideAlertAfterTicks);
+    }
+
+    public boolean shouldPlayAlertSound() {
+        return playAlertSound;
     }
 }
 

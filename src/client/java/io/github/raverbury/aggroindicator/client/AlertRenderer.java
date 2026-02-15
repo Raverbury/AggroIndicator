@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.raverbury.aggroindicator.AggroIndicator;
 import io.github.raverbury.aggroindicator.client.config.ClientConfig;
+import io.github.raverbury.aggroindicator.modules.AggroSoundPlayer;
 import io.github.raverbury.aggroindicator.util.MathHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -38,7 +39,15 @@ public final class AlertRenderer {
      * @param mobUuid
      */
     public static void addAggroingMob(UUID mobUuid, boolean isAboutToAttack) {
+        if (entityUuidSet.containsKey(mobUuid)) {
+            return;
+        }
         entityUuidSet.put(mobUuid, new Pair<>(0, 0L));
+        if (!ClientConfig.cachedOrDefault().shouldPlayAlertSound()) {
+            return;
+        }
+        AggroSoundPlayer.playClientSoundForPlayer(
+                MinecraftClient.getInstance().player);
     }
 
     /**
@@ -121,8 +130,11 @@ public final class AlertRenderer {
                 continue;
             }
             int hideTimer = clientConfig.getHideTimer();
-            if (hideTimer > 0 && entityUuidSet.get(mob.getUuid())
-                    .getLeft() > hideTimer) {
+            Pair<Integer, Long> times = entityUuidSet.get(mob.getUuid());
+            if (times == null) {
+                times = new Pair<>(0, 0L);
+            }
+            if (hideTimer > 0 && times.getLeft() > hideTimer) {
                 continue;
             }
             String entityRegistryName = Registries.ENTITY_TYPE.getKey(

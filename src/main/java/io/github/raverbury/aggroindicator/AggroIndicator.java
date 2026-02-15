@@ -1,5 +1,6 @@
 package io.github.raverbury.aggroindicator;
 
+import io.github.raverbury.aggroindicator.modules.AggroSoundPlayer;
 import io.github.raverbury.aggroindicator.network.packet.S2CMobChangeTargetPacket;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -127,5 +128,6 @@ public class AggroIndicator implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        AggroSoundPlayer.init();
     }
 }
