@@ -24,6 +24,7 @@ public class ClientConfig {
     public static ForgeConfigSpec.ConfigValue<String> ALERT_COLOR_HEX;
     public static ForgeConfigSpec.IntValue HIDE_ALERT_AFTER;
     public static ForgeConfigSpec.BooleanValue PLAY_ALERT_SOUND;
+    public static ForgeConfigSpec.IntValue MUTE_ALERT_SOUND_MOB_THRESHOLD;
 
     static {
         CLIENT_BUILDER.push("Rendering");
@@ -90,6 +91,18 @@ public class ClientConfig {
         ).translation("config.client.clientPlayAlertSound").define(
                 "playAlertSound", false);
 
+        PLAY_ALERT_SOUND = CLIENT_BUILDER.comment(
+                "Play an alert sound when mobs target the player"
+        ).translation("config.client.clientPlayAlertSound").define(
+                "playAlertSound", false);
+
+        MUTE_ALERT_SOUND_MOB_THRESHOLD = CLIENT_BUILDER.comment(
+                "Play an alert sound only if the player has X or less mobs " +
+                        "targeting them, to avoid spam when engaging large " +
+                        "group of mobs"
+        ).translation("config.client.muteAlertSoundMobThreshold").defineInRange(
+                "playAlertSound", 2, 1, Integer.MAX_VALUE);
+
         CLIENT_BUILDER.pop();
 
         INSTANCE = CLIENT_BUILDER.build();
@@ -113,6 +126,7 @@ public class ClientConfig {
         public static float[] COLORS = {1f, 1f, 1f};
         public static int hideAfterTicks = -1;
         public static boolean playAlertSound;
+        public static int muteAlertSoundMobThreshold;
 
         public static void reload() {
             RENDER_ALERT_ICON = ClientConfig.RENDER_ALERT_ICON.get();
@@ -131,6 +145,8 @@ public class ClientConfig {
             COLORS[2] = color.getBlue() / 255f;
             hideAfterTicks = ClientConfig.HIDE_ALERT_AFTER.get();
             playAlertSound = ClientConfig.PLAY_ALERT_SOUND.get();
+            muteAlertSoundMobThreshold =
+                    ClientConfig.MUTE_ALERT_SOUND_MOB_THRESHOLD.get();
         }
     }
 }

@@ -11,5 +11,6 @@
   "config.client.clientAggroIconStyle": "Aggro icon style",
   "config.client.clientHideAlertAfterTicks": "Hide aggro icon after X ticks",
   "config.client.clientAlertColorHex": "Aggro icon hex color",
-  "config.client.clientPlayAlertSound": "Play alert sound"
+  "config.client.clientPlayAlertSound": "Play alert sound",
+  "config.client.muteAlertSoundMobThreshold": "Mute alert sound mob threshold"
 }

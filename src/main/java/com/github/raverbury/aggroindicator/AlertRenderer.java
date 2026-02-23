@@ -37,13 +37,18 @@ public class AlertRenderer {
     }
 
     public static void addAggroingMob(UUID mobUuid) {
-        if (!entityUuidSet.containsKey(mobUuid)) {
-            entityUuidSet.put(mobUuid, new Tuple<>(0, 0L));
-            if (ClientConfig.Cached.playAlertSound) {
-                AggroSoundPlayer.playClientSoundForPlayer(
-                        Minecraft.getInstance().player);
-            }
+        if (entityUuidSet.containsKey(mobUuid)) {
+            return;
         }
+        entityUuidSet.put(mobUuid, new Tuple<>(0, 0L));
+        if (!ClientConfig.Cached.playAlertSound) {
+            return;
+        }
+        if (entityUuidSet.size() > ClientConfig.Cached.muteAlertSoundMobThreshold)
+        {
+            return;
+        }
+        AggroSoundPlayer.playClientSoundForPlayer(Minecraft.getInstance().player);
     }
 
     public static void removeAggroingMob(UUID mobUuid) {
