@@ -91,17 +91,12 @@ public class ClientConfig {
         ).translation("config.client.clientPlayAlertSound").define(
                 "playAlertSound", false);
 
-        PLAY_ALERT_SOUND = CLIENT_BUILDER.comment(
-                "Play an alert sound when mobs target the player"
-        ).translation("config.client.clientPlayAlertSound").define(
-                "playAlertSound", false);
-
         MUTE_ALERT_SOUND_MOB_THRESHOLD = CLIENT_BUILDER.comment(
                 "Play an alert sound only if the player has X or less mobs " +
                         "targeting them, to avoid spam when engaging large " +
                         "group of mobs"
         ).translation("config.client.muteAlertSoundMobThreshold").defineInRange(
-                "playAlertSound", 2, 1, Integer.MAX_VALUE);
+                "muteAlertSoundThreshold", 2, 1, Integer.MAX_VALUE);
 
         CLIENT_BUILDER.pop();
 
