@@ -85,7 +85,9 @@ public class ClientConfig {
         HIDE_ALERT_AFTER = CLIENT_BUILDER.comment(
                 "Hide aggro icon after X ticks, set to <= 0 to disable"
         ).translation("config.client.clientHideAlertAfterTicks").defineInRange("hideAlertAfterTicks", -1, -2, Integer.MAX_VALUE);
+        CLIENT_BUILDER.pop();
 
+        CLIENT_BUILDER.push("Sound");
         PLAY_ALERT_SOUND = CLIENT_BUILDER.comment(
                 "Play an alert sound when mobs target the player"
         ).translation("config.client.clientPlayAlertSound").define(
