@@ -29,43 +29,44 @@ public class ClientConfig {
         CLIENT_BUILDER.push("Rendering");
 
         RENDER_ALERT_ICON = CLIENT_BUILDER.comment(
-                        "Controls whether the client should render alert icons")
+                        "Controls whether the client should render aggro icons")
                 .translation("config.client.renderAlertIcon")
                 .define("renderAlertIcon", true);
 
         RENDER_RANGE = CLIENT_BUILDER.comment(
-                        "Only render alert icons for mobs within this range")
+                        "Only render aggro icons for mobs within this range")
                 .translation("config.client.renderRange")
                 .defineInRange("renderRange", 32, 8, 64);
 
         X_OFFSET = CLIENT_BUILDER.comment(
-                        "Adjusts the horizontal placement of alert icons")
+                        "Adjusts the horizontal placement of aggro icons")
                 .translation("config.client.xOffset")
                 .defineInRange("xOffset", 0, -10, (double) 10);
 
         Y_OFFSET = CLIENT_BUILDER.comment(
-                        "Adjusts the vertical placement of alert icons")
+                        "Adjusts the vertical placement of aggro icons")
                 .translation("config.client.yOffset")
                 .defineInRange("yOffset", 0, -10, (double) 50);
 
         ALERT_ICON_SIZE = CLIENT_BUILDER.comment(
-                        "Adjust the size of alert icons")
+                        "Adjust the size of aggro icons")
                 .translation("config.client.alertIconSize")
                 .defineInRange("alertIconSize", 30, 0, (double) 100);
 
         SCALE_WITH_MOB_SIZE = CLIENT_BUILDER.comment(
-                        "Controls whether alert icons should grow in size with mobs")
+                        "Controls whether aggro icons should grow in size " +
+                                "with mobs")
                 .translation("config.client.scaleWithMobSize")
                 .define("scaleWithMobSize", false);
 
         CLIENT_MOB_BLACKLIST = CLIENT_BUILDER.comment(
-                        "Do not render alert icons for these mobs")
+                        "Do not render aggro icons for these mobs")
                 .translation("config.client.clientMobBlacklist")
                 .defineList("clientMobBlacklist", new ArrayList<String>(),
                         registry_name -> true);
 
         TREAT_BLACKLIST_AS_WHITELIST = CLIENT_BUILDER.comment(
-                        "Draw alert icons only for the blacklisted mobs instead"
+                        "Draw aggro icons only for the blacklisted mobs instead"
                 ).translation("config.client.treatBlacklistAsWhitelist")
                 .define("treatBlacklistAsWhitelist", false);
 
@@ -75,13 +76,13 @@ public class ClientConfig {
                 .defineEnum("clientAggroIconStyle", AggroIconStyle.CLASSIC);
 
         ALERT_COLOR_HEX = CLIENT_BUILDER.comment(
-                        "The color of the alert icon")
+                        "The color of the aggro icon, in hex format")
                 .translation("config.client.clientAlertColorHex")
                 .define("alertColorHex", "0xFF6666"
                 );
 
         HIDE_ALERT_AFTER = CLIENT_BUILDER.comment(
-                "Hide alert icon after X ticks, set to <= 0 to disable"
+                "Hide aggro icon after X ticks, set to <= 0 to disable"
         ).translation("config.client.clientHideAlertAfterTicks").defineInRange("hideAlertAfterTicks", -1, -2, Integer.MAX_VALUE);
 
         PLAY_ALERT_SOUND = CLIENT_BUILDER.comment(
