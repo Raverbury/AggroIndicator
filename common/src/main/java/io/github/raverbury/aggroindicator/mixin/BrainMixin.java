@@ -1,11 +1,15 @@
 package io.github.raverbury.aggroindicator.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import io.github.raverbury.aggroindicator.accessors.BrainAccess;
 import io.github.raverbury.aggroindicator.CommonClass;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemorySlot;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,40 +30,63 @@ public abstract class BrainMixin implements BrainAccess {
     private LivingEntity aggroindicator$brainOwner = null;
 
     /**
-     * Check for modification of ATTACK_TARGET memory type, treat it as a
-     * setter call for the purpose of acquiring a new target (nullable) and
-     * dispatch CustomLivingChangeTargetEvent
-     *
-     * @param memoryModuleType
-     * @param memoryValue
-     * @param ci
+     * setInternalMemory overload #1, set
      */
-    @Inject(method = "setMemoryInternal", at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
-    private <U> void aggroindicator$dispatchCLCTEOnSetMemory(MemoryModuleType<U> memoryModuleType, Optional<? extends ExpirableValue<?>> memoryValue, CallbackInfo ci) {
-        if ((memoryModuleType == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
-            if (memoryValue.isPresent()) {
-                CommonClass.livingChangeTarget(aggroindicator$brainOwner,
-                        (LivingEntity) memoryValue.get().getValue());
-            } else {
-                CommonClass.livingChangeTarget(aggroindicator$brainOwner,
-                        null);
-            }
+    @WrapOperation(method = "setMemoryInternal(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/memory/MemorySlot;set(Ljava/lang/Object;)V"))
+    private <T> void aggroindicator$dispatchCLCTEOnSetMemory1(MemorySlot<T> instance, T value, Operation<Void> original, @Local(argsOnly = true) MemoryModuleType<T> type) {
+        if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
+            CommonClass.livingChangeTarget(aggroindicator$brainOwner, (LivingEntity) value);
         }
     }
 
     /**
-     * Check for existence of ATTACK_TARGET memory type, treat it as a
-     * setter call for the purpose of acquiring a new target (null) and dispatch
-     * CustomLivingChangeTargetEvent
-     *
-     * @param ci
+     * setInternalMemory overload #1, clear
      */
-    @Inject(method = "clearMemories", at = @At(value = "INVOKE", target = "Ljava/util/Map;keySet()Ljava/util/Set;"))
-    private void aggroindicator$dispatchCLCTEOnClear(CallbackInfo ci) {
-        if (this.memories.containsKey(
-                MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
-            CommonClass.livingChangeTarget(aggroindicator$brainOwner,
-                    null);
+    @WrapOperation(method = "setMemoryInternal(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/memory/MemorySlot;clear()V"))
+    private <T> void aggroindicator$dispatchCLCTEOnClearMemory1(MemorySlot<T> instance, Operation<Void> original, @Local(argsOnly = true) MemoryModuleType<T> type) {
+        if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
+            CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
+        }
+    }
+
+    /**
+     * setInternalMemory overload #2, set
+     */
+    @WrapOperation(method = "setMemoryInternal(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;J)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/memory/MemorySlot;set(Ljava/lang/Object;J)V"))
+    private <T> void aggroindicator$dispatchCLCTEOnSetMemory2(MemorySlot<T> instance, T value, long timeToLive, Operation<Void> original, @Local(argsOnly = true) MemoryModuleType<T> type) {
+        if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
+            CommonClass.livingChangeTarget(aggroindicator$brainOwner, (LivingEntity) value);
+        }
+    }
+
+    /**
+     * setInternalMemory overload #2, clear
+     */
+    @WrapOperation(method = "setMemoryInternal(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;J)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/memory/MemorySlot;clear()V"))
+    private <T> void aggroindicator$dispatchCLCTEOnClearMemory2(MemorySlot<T> instance, Operation<Void> original, @Local(argsOnly = true) MemoryModuleType<T> type) {
+        if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
+            CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
+        }
+    }
+
+    /*
+     * clearMemories
+     */
+    @Inject(method = "clearMemories", at = @At(value = "RETURN"))
+    private void aggroindicator$dispatchCLCTEOnClearAll(CallbackInfo ci) {
+        if (this.memories.containsKey(MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
+            CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
+        }
+    }
+
+    /*
+     * eraseMemory
+     */
+    @WrapOperation(method = "eraseMemory", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/memory/MemorySlot;clear()V"))
+    private <T> void aggroindicator$dispatchCLCTEOnErase(MemorySlot<T> instance,
+                                                     Operation<Void> original, @Local(argsOnly = true) MemoryModuleType<T> type) {
+        if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
+            CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
         }
     }
 

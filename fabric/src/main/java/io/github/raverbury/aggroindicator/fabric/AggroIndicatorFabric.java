@@ -12,6 +12,7 @@ public class AggroIndicatorFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         CommonClass.init();
-        PayloadTypeRegistry.playS2C().register(S2CMobChangeTargetPacket.PACKET_TYPE, S2CMobChangeTargetPacket.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(S2CMobChangeTargetPacket.PACKET_TYPE
+                , S2CMobChangeTargetPacket.CODEC);
     }
 }

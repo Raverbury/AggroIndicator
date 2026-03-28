@@ -1,6 +1,7 @@
-package io.github.raverbury.aggroindicator;
+package io.github.raverbury.aggroindicator.config;
 
 import com.google.gson.GsonBuilder;
+import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.client.AlertRenderer;
 import io.github.raverbury.aggroindicator.platform.Services;
 
@@ -18,9 +19,15 @@ public class ClientConfig {
     private static final File CONFIG_FILE =
             new File(Services.CONFIG_HELPER.getConfigSavePath().toFile(),
                     Constants.MOD_ID + "-client.json");
-    private static final float[] cachedAlertColorRGB = new float[]{1f, 0f, 0f};
+
     private static ClientConfig CACHED_CONFIG = null;
+
+    private static final float[] cachedAlertColorRGB = new float[]{1f, 0f,
+            0f};
     private static HashSet<String> CACHED_BLACKLIST_TABLE = null;
+
+    private transient float cachedRenderRangeSqr = 24f * 24f;
+
     public boolean renderAlertIcon = true;
     public boolean scaleWithMobSize = true;
     public List<String> mobBlacklist = List.of("minecraft:bat");
@@ -34,6 +41,7 @@ public class ClientConfig {
     private String alertColorHex = "0xFF6666";
     private int hideAlertAfterTicks = 0;
     private boolean playAlertSound = false;
+    private float alertSoundCooldownSeconds = 15f;
 
     public static ClientConfig cachedOrDefault() {
         if (CACHED_CONFIG != null) {
@@ -52,14 +60,23 @@ public class ClientConfig {
 
         try (Reader reader = Files.newBufferedReader(CONFIG_FILE.toPath())) {
             config =
-                    new GsonBuilder().setPrettyPrinting().create()
+                    new GsonBuilder()
+                            .setPrettyPrinting().create()
                             .fromJson(reader, ClientConfig.class);
-        } catch (IOException e) {
+            if (config == null)
+            {
+                config = new ClientConfig();
+            }
+        } catch (Exception e) {
             Constants.LOG.error("[Aggro Indicator] Loading config failed: {}," +
                             " using default value.",
-                    e.getMessage(), e);
+                    e.getMessage());
             config = new ClientConfig();
         }
+        save(config);
+
+        // clamping
+        config.renderRange = Math.clamp(config.renderRange, 0f, 64f);
 
         CACHED_BLACKLIST_TABLE = null;
         Color alertColor = Color.decode(config.alertColorHex);
@@ -67,8 +84,9 @@ public class ClientConfig {
         cachedAlertColorRGB[1] = alertColor.getGreen() / 255f;
         cachedAlertColorRGB[2] = alertColor.getBlue() / 255f;
         CACHED_CONFIG = config;
+        config.cachedRenderRangeSqr = config.renderRange * config.renderRange;
 
-        AlertRenderer.setAggroIcon(config.alertIconStyle);
+        AlertRenderer.setAggroIcon(Math.clamp(config.alertIconStyle, 0, 2));
 
         return config;
     }
@@ -83,8 +101,8 @@ public class ClientConfig {
         }
     }
 
-    public float getClampedRenderRange() {
-        return Math.min(32f, Math.max(renderRange, 0f));
+    public float getRenderRangeSqr() {
+        return cachedRenderRangeSqr;
     }
 
     public float getClampedXOffset() {
@@ -115,5 +133,11 @@ public class ClientConfig {
         return Math.max(0, hideAlertAfterTicks);
     }
 
-    public boolean shouldPlayAlertSound() { return playAlertSound; }
+    public boolean shouldPlayAlertSound() {
+        return playAlertSound;
+    }
+
+    public double getAlertSoundCooldown() {
+        return Math.clamp(alertSoundCooldownSeconds, 1f, 10000f);
+    }
 }

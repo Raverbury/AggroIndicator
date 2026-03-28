@@ -1,7 +1,7 @@
 package io.github.raverbury.aggroindicator.client;
 
 import com.mojang.blaze3d.vertex.*;
-import io.github.raverbury.aggroindicator.ClientConfig;
+import io.github.raverbury.aggroindicator.config.ClientConfig;
 import io.github.raverbury.aggroindicator.Constants;
 import io.github.raverbury.aggroindicator.modules.AggroSoundPlayer;
 import io.github.raverbury.aggroindicator.util.MathHelper;
@@ -119,6 +119,13 @@ public final class AlertRenderer {
         }
 
         Mob mob = (Mob) entity;
+
+        // check range how did i miss this
+        float configRenderDistance = clientConfig.getRenderRangeSqr();
+        if (localPlayer.distanceToSqr(mob) > configRenderDistance)
+        {
+            return;
+        }
 
         // check timer, stop if seen tick exceed configured hideTimer
         int hideTimer = clientConfig.getHideTimer();

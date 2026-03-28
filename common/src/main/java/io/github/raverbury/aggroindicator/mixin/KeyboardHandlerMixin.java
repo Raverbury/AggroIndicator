@@ -2,7 +2,7 @@ package io.github.raverbury.aggroindicator.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import io.github.raverbury.aggroindicator.ClientConfig;
+import io.github.raverbury.aggroindicator.config.ClientConfig;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;

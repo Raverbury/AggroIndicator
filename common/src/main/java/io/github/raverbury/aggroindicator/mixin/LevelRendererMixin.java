@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.raverbury.aggroindicator.client.AlertRenderer;
-import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
@@ -38,7 +37,6 @@ public abstract class LevelRendererMixin {
         EntityRenderState res = original.call(instance, entity, partialTick);
         PoseStack poseStack = new PoseStack();
         MultiBufferSource multiBufferSource = this.renderBuffers.bufferSource();
-        Camera camera = entityRenderDispatcher.camera;
         AlertRenderer.renderAlertIconForEntity(entity, partialTick,
                 poseStack, multiBufferSource, entityRenderDispatcher.camera);
         AlertRenderer.increaseSeenFrameCountForEntity(entity.getUUID(), entity.level().getGameTime());
