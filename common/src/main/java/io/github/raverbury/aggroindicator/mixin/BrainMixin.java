@@ -37,6 +37,7 @@ public abstract class BrainMixin implements BrainAccess {
         if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
             CommonClass.livingChangeTarget(aggroindicator$brainOwner, (LivingEntity) value);
         }
+        original.call(instance, value);
     }
 
     /**
@@ -47,6 +48,7 @@ public abstract class BrainMixin implements BrainAccess {
         if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
             CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
         }
+        original.call(instance);
     }
 
     /**
@@ -57,6 +59,7 @@ public abstract class BrainMixin implements BrainAccess {
         if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
             CommonClass.livingChangeTarget(aggroindicator$brainOwner, (LivingEntity) value);
         }
+        original.call(instance, value, timeToLive);
     }
 
     /**
@@ -67,6 +70,7 @@ public abstract class BrainMixin implements BrainAccess {
         if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
             CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
         }
+        original.call(instance);
     }
 
     /*
@@ -88,6 +92,7 @@ public abstract class BrainMixin implements BrainAccess {
         if ((type == MemoryModuleType.ATTACK_TARGET) && (aggroindicator$brainOwner != null)) {
             CommonClass.livingChangeTarget(aggroindicator$brainOwner, null);
         }
+        original.call(instance);
     }
 
     @Override
