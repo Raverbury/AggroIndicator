@@ -42,10 +42,8 @@ public final class AlertRenderer {
     public static void addAggroingMob(UUID mobUuid, boolean isAboutToAttack) {
         Tuple<Integer, Long> a = entityUuidSet.putIfAbsent(mobUuid, new Tuple<>(0, 0L));
 
-        if (a == null)
-        {
-            if (ClientConfig.cachedOrDefault().shouldPlayAlertSound())
-            {
+        if (a == null) {
+            if (ClientConfig.cachedOrDefault().shouldPlayAlertSound()) {
                 AggroSoundPlayer.playClientSoundForPlayer(Minecraft.getInstance().player);
             }
         }
@@ -105,16 +103,24 @@ public final class AlertRenderer {
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         ClientLevel clientLevel = Minecraft.getInstance().level;
 
-        boolean SHOULD_RETURN_EARLY_1 =
+        boolean FAIL_SANITY_CHECK =
                 entityUuidSet.isEmpty() ||
                         !(entity instanceof Mob) ||
                         camera == null ||
                         clientLevel == null ||
-                        localPlayer == null ||
-                        localPlayer.hasEffect(MobEffects.BLINDNESS) ||
-                        localPlayer.hasEffect(MobEffects.DARKNESS);
+                        localPlayer == null;
 
-        if (SHOULD_RETURN_EARLY_1) {
+        if (FAIL_SANITY_CHECK) {
+            return;
+        }
+
+        if (localPlayer.hasEffect(MobEffects.BLINDNESS) ||
+                localPlayer.hasEffect(MobEffects.DARKNESS)) {
+            return;
+        }
+
+        // check aggro list, stop if not present
+        if (!entityUuidSet.containsKey(entity.getUUID())) {
             return;
         }
 
@@ -122,8 +128,7 @@ public final class AlertRenderer {
 
         // check range how did i miss this
         float configRenderDistance = clientConfig.getRenderRangeSqr();
-        if (localPlayer.distanceToSqr(mob) > configRenderDistance)
-        {
+        if (localPlayer.distanceToSqr(mob) > configRenderDistance) {
             return;
         }
 
@@ -132,26 +137,20 @@ public final class AlertRenderer {
         if (!entityUuidSet.containsKey(entity.getUUID())) {
             return;
         }
+
         Tuple<Integer, Long> tuple = entityUuidSet.get(entity.getUUID());
         // this sometimes happens on dedicated server during testing...
         // how?
         // TODO: investigate this
-        if (tuple == null)
-        {
-           tuple = new Tuple<>(0, 0L);
+        if (tuple == null) {
+            tuple = new Tuple<>(0, 0L);
         }
         if (hideTimer > 0 && tuple.getA() > hideTimer) {
             return;
         }
 
-        // check if mob has invisibility
         if (mob.hasEffect(
                 MobEffects.INVISIBILITY) || entity.isInvisible()) {
-            return;
-        }
-
-        // check aggro list, stop if not present
-        if (!entityUuidSet.containsKey(entity.getUUID())) {
             return;
         }
 
