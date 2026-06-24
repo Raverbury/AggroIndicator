@@ -10,18 +10,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,43 +41,42 @@ public abstract class LevelRendererMixin {
     private RenderBuffers renderBuffers;
 
     @Shadow
-    private @Nullable ClientLevel level;
-
-    @Shadow
     @Final
     private LevelRenderState levelRenderState;
 
     @Shadow
-    @Final
-    private Minecraft minecraft;
-
-    @Shadow
     public abstract boolean isSectionCompiledAndVisible(BlockPos blockPos);
 
+    @Shadow
+    @Final
+    private SubmitNodeStorage submitNodeStorage;
+
     /**
-     * This actually matches LevelRenderStage events better since it's in
-     * the main pass, downside is gotta iter over entities again
+     * Nvm we're back to submitEntities
+     *
      * @param instance
      * @param original
      */
-    @WrapOperation(method = "lambda$addMainPass$0",
+    @WrapOperation(method = "submitFeatures",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher;renderTranslucentFeatures()V"))
-    private void aggroindicator$drawAlertIcons(FeatureRenderDispatcher instance, Operation<Void> original) {
-        Camera camera = this.minecraft.gameRenderer.getMainCamera();
-        Frustum frustum = camera.getCullFrustum();
+                    target = "Lnet/minecraft/client/renderer/LevelRenderer;submitEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"))
+    private void aggroindicator$submitAggroIcons(LevelRenderer instance, PoseStack poseStack, LevelRenderState levelRenderState, SubmitNodeCollector output, Operation<Void> original) {
+        Minecraft clientInstance = Minecraft.getInstance();
+        ClientLevel level = clientInstance.level;
+        Camera actualCamera = clientInstance.gameRenderer.mainCamera();
+        Frustum frustum = actualCamera.getCullFrustum();
         Vec3 renderCamPos = this.levelRenderState.cameraRenderState.pos;
         double camX = renderCamPos.x();
         double camY = renderCamPos.y();
         double camZ = renderCamPos.z();
-        DeltaTracker deltaTracker = this.minecraft.getDeltaTracker();
-        TickRateManager tickRateManager = this.minecraft.level.tickRateManager();
-        for (Entity entity : this.level.entitiesForRendering()) {
+        DeltaTracker deltaTracker = clientInstance.getDeltaTracker();
+        TickRateManager tickRateManager = level.tickRateManager();
+        for (Entity entity : clientInstance.level.entitiesForRendering()) {
             if (this.entityRenderDispatcher.shouldRender(entity, frustum,
-                    camX, camY, camZ) || entity.hasIndirectPassenger(this.minecraft.player)) {
+                    camX, camY, camZ) || entity.hasIndirectPassenger(clientInstance.player)) {
                 BlockPos blockPos = entity.blockPosition();
-                if ((this.level.isOutsideBuildHeight(blockPos.getY()) || this.isSectionCompiledAndVisible(blockPos)) && (entity != camera.entity() || camera.isDetached() || camera.entity() instanceof LivingEntity && ((LivingEntity) camera.entity()).isSleeping()) && (!(entity instanceof LocalPlayer) || camera.entity() == entity)) {
+                if ((level.isOutsideBuildHeight(blockPos.getY()) || this.isSectionCompiledAndVisible(blockPos)) && (entity != actualCamera.entity() || actualCamera.isDetached() || actualCamera.entity() instanceof LivingEntity && ((LivingEntity) actualCamera.entity()).isSleeping()) && (!(entity instanceof LocalPlayer) || actualCamera.entity() == entity)) {
                     if (entity.tickCount == 0) {
                         entity.xOld = entity.getX();
                         entity.yOld = entity.getY();
@@ -89,13 +87,12 @@ public abstract class LevelRendererMixin {
                     }
                     float partialTick =
                             deltaTracker.getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
-                    MultiBufferSource multiBufferSource = this.renderBuffers.bufferSource();
-                    AlertRenderer.renderAlertIconForEntity(entity, partialTick,
-                            aggroindicator$staticPoseStack, multiBufferSource, entityRenderDispatcher.camera);
+                    AlertRenderer.submitAggroIconForEntity(entity, partialTick,
+                            aggroindicator$staticPoseStack, submitNodeStorage, entityRenderDispatcher.camera);
                     AlertRenderer.increaseSeenFrameCountForEntity(entity.getUUID(), entity.level().getGameTime());
                 }
             }
         }
-        original.call(instance);
+        original.call(instance, poseStack, levelRenderState, output);
     }
 }

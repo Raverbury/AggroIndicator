@@ -9,13 +9,12 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -78,11 +77,11 @@ public final class AlertRenderer {
         if (oldTuple == null) {
             oldTuple = new Tuple<>(0, 0L);
         }
-        if (oldTuple.getB() >= currentTick) {
+        if (oldTuple.b >= currentTick) {
             return;
         }
-        oldTuple.setA(oldTuple.getA() + 1);
-        oldTuple.setB(currentTick);
+        oldTuple.a = (oldTuple.a + 1);
+        oldTuple.b = (currentTick);
         entityUuidSet.replace(mobUuid, oldTuple);
     }
 
@@ -93,7 +92,7 @@ public final class AlertRenderer {
     /**
      * Draws aggro icon for this entity, if applicable.
      */
-    public static void renderAlertIconForEntity(Entity entity, float partialTick, PoseStack matrix, MultiBufferSource multiBufferSource, Camera camera) {
+    public static void submitAggroIconForEntity(Entity entity, float partialTick, PoseStack matrix, SubmitNodeStorage submitNodeStorage, Camera camera) {
         // early stop
         ClientConfig clientConfig = ClientConfig.cachedOrDefault();
         if (!clientConfig.renderAlertIcon) {
@@ -145,7 +144,7 @@ public final class AlertRenderer {
         if (tuple == null) {
             tuple = new Tuple<>(0, 0L);
         }
-        if (hideTimer > 0 && tuple.getA() > hideTimer) {
+        if (hideTimer > 0 && tuple.a > hideTimer) {
             return;
         }
 
@@ -191,12 +190,13 @@ public final class AlertRenderer {
         }
         float[] rgb = clientConfig.getAlertColorRGB();
 
-        VertexConsumer vertexConsumer = multiBufferSource.getBuffer(RenderTypes.text(aggroIconIdentifier));
+        submitNodeStorage.submitCustomGeometry(matrix, RenderTypes.text(aggroIconIdentifier), ((poseStack, vertexConsumer) -> {
+            _render(vertexConsumer, poseStack, clientConfig.getClampedXOffset(),
+                    -(7f + clientConfig.getClampedYOffset()),
+                    clientConfig.getClampedAlertIconSize(),
+                    rgb);
+        }));
 
-        _render(vertexConsumer, matrix, clientConfig.getClampedXOffset(),
-                -(7f + clientConfig.getClampedYOffset()),
-                clientConfig.getClampedAlertIconSize(),
-                rgb);
 
         matrix.popPose();
     }
@@ -212,11 +212,10 @@ public final class AlertRenderer {
         };
     }
 
-    private static void _render(VertexConsumer vertexConsumer, PoseStack poseStack, double x, double y,
+    private static void _render(VertexConsumer vertexConsumer, PoseStack.Pose pose, double x, double y,
                                 float size,
                                 float[] rgb) {
-        Matrix4f m4f = poseStack.last().pose();
-        PoseStack.Pose last = poseStack.last();
+        Matrix4f m4f = pose.pose();
         final int LIGHT = 0xF000F0;
         float halfWidth = size / 2;
         float r = rgb[0];
@@ -225,12 +224,22 @@ public final class AlertRenderer {
         final float a = 1f;
 
         vertexConsumer.addVertex(m4f, (float) (-halfWidth + x), (float) y, 0.25f)
-                .setUv(0f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                .setUv(0f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(pose, 0.0F, 0.0F, 0.0F);
         vertexConsumer.addVertex(m4f, (float) (-halfWidth + x), (float) (size + y),
-                0.25f).setUv(0f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                0.25f).setUv(0f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(pose, 0.0F, 0.0F, 0.0F);
         vertexConsumer.addVertex(m4f, (float) (halfWidth + x), (float) (size + y),
-                0.25f).setUv(1f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                0.25f).setUv(1f, 1f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(pose, 0.0F, 0.0F, 0.0F);
         vertexConsumer.addVertex(m4f, (float) (halfWidth + x), (float) y, 0.25f)
-                .setUv(1f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(last, 0.0F, 0.0F, 0.0F);
+                .setUv(1f, 0f).setColor(r, g, b, a).setLight(LIGHT).setOverlay(OverlayTexture.NO_OVERLAY).setNormal(pose, 0.0F, 0.0F, 0.0F);
+    }
+
+    private static class Tuple<A, B> {
+        public A a;
+        public B b;
+
+        public Tuple(A a, B b) {
+            this.a = a;
+            this.b = b;
+        }
     }
 }
